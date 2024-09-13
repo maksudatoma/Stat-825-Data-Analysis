@@ -1,0 +1,353 @@
+---
+title: "Data Analysis-1"
+format: html
+editor: visual
+---
+
+##Data Description:
+
+Researchers have inoculated E. coli to 3 different types of flour and subjected them to 3 different types of water activity. They are measuring the Log CFU/g (E. coli_load) at 10 different unequally spaced time points. Overall, they want to know the survival persistence of E. coli.
+
+Note: - 0.35, 0.55 and 0.65 are the levels of water activity.
+
+##Things that we could do-
+
+1.  Descriptive Statistics- To see whether the data set is normally distributed. Upon that, we'll fit our model •Statistical Modeling: • Fit LM or GLM model • Fit a Generalized Linear Mixed Model (GLMM) to assess the effect of flour type, water activity, and their interaction over time on E. coli load. • Include time as a repeated measure and flour/aw interactions as fixed effects, while replicate (REP) could be a random effect. • Hypothesis Testing: • Investigate the significance of the flour type and water activity on E. coli persistence. • Assess if the interaction between flour type and water activity is significant. What else?
+
+#Descriptive Statistics
+
+```{r}
+library(dplyr)
+Data_1 %>%
+  group_by(Flour) %>%
+  summarise(
+    Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+    SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
+  )
+boxplot(Ecoli_Load ~ Flour, data = Data_1, main="E. coli Load by Flour", xlab="Flour", ylab="E. coli Load")
+
+```
+#Anova Test
+
+```{r}
+aov_results <- aov(Ecoli_Load ~ Flour, data = Data_1)
+summary(aov_results)
+
+```
+As, it's significanty, we're running Tukey's HSD
+
+
+```{r}
+TukeyHSD(aov_results)
+
+```
+*Interpritation:*
+
+The Tukey HSD test indicates significant differences in E. coli load between Wheat and both Buck and Cake flour types. There is no significant difference between Cake and Buck flour types.
+
+
+#Pairwise Comparison Plot
+```{r}
+# Load required library
+library(ggplot2)
+library(multcompView)
+
+ggplot(Data_1, aes(x=Flour, y=Ecoli_Load, fill=Flour)) +
+  geom_boxplot() +
+  labs(title="E. coli Load by Flour", x="Flour", y="E. coli Load") +
+  theme_minimal() +
+  stat_summary(
+    aes(label = ..y..), 
+    fun = mean, 
+    geom = "text", 
+    vjust = -0.5, 
+    size = 3
+  ) +
+  annotate("text", x = 1, y = 10, label = "Significant Difference", color = "red") +
+  annotate("segment", x = 1, xend = 2, y = 10, yend = 10, color = "red") +
+  annotate("text", x = 2, y = 10, label = "p < 0.05", color = "red")
+
+```
+
+```{r}
+# Install and load ggsignif package
+
+library(ggsignif)
+
+# Create the boxplot with Tukey HSD results
+ggplot(Data_1, aes(x=Flour, y=Ecoli_Load, fill=Flour)) +
+  geom_boxplot() +
+  labs(title="E. coli Load by Flour", x="Flour", y="E. coli Load") +
+  theme_minimal() +
+  stat_summary(
+    aes(label = ..y..), 
+    fun = mean, 
+    geom = "text", 
+    vjust = -0.5, 
+    size = 3
+  ) +
+  geom_signif(
+    comparisons = list(c("Wheat", "Buck"), c("Wheat", "Cake")),
+    map_signif_level = TRUE
+  )
+
+```
+
+#Interaction Plot
+
+```{r}
+# Calculate means and standard errors
+summary_data <- Data_1 %>%
+  group_by(Flour) %>%
+  summarise(
+    Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+    SE = sd(Ecoli_Load, na.rm = TRUE) / sqrt(n())
+  )
+
+# Plot with error bars
+ggplot(summary_data, aes(x=Flour, y=Mean_Ecoli_Load, fill=Flour)) +
+  geom_bar(stat="identity", position=position_dodge(), width=0.7) +
+  geom_errorbar(aes(ymin=Mean_Ecoli_Load-SE, ymax=Mean_Ecoli_Load+SE), width=0.2) +
+  labs(title="Mean E. coli Load by Flour", x="Flour", y="Mean E. coli Load") +
+  theme_minimal()
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+# Assuming your data frame is called 'Data_1' and the column you're analyzing is 'Ecoli_Load'
+desc_stats <- Data_1 %>%
+  group_by(aw, Day) %>%
+  summarise(
+    mean = mean(Ecoli_Load, na.rm = TRUE),
+    median = median(Ecoli_Load, na.rm = TRUE),
+    sd = sd(Ecoli_Load, na.rm = TRUE),
+    min = min(Ecoli_Load, na.rm = TRUE),
+    max = max(Ecoli_Load, na.rm = TRUE)
+  ) %>%
+  mutate(range = max - min)
+
+# Print the results
+print(desc_stats)
+
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+
+```
+
+The `echo: false` option disables the printing of code (only output is displayed). #Data Distribution
+#Not_Necessary
+```{r}
+#| echo: false
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Assuming your data is stored in 'Data_1'
+
+# 1. QQ Plot for Ecoli_Load to check normality
+qqplot_gg <- ggplot(Data_1, aes(sample = Ecoli_Load)) +
+  stat_qq() +
+  stat_qq_line() +
+  ggtitle("QQ Plot for Ecoli_Load") +
+  theme_minimal()
+
+print(qqplot_gg)
+
+# 2. Box Plot for Ecoli_Load across different 'aw' values and 'Days'
+boxplot_gg <- ggplot(Data_1, aes(x = as.factor(aw), y = Ecoli_Load)) +
+  geom_boxplot() +
+  facet_wrap(~ Day) +  # Separate box plots for different time points
+  ggtitle("Box Plot of Ecoli_Load across aw levels") +
+  xlab("aw") +
+  ylab("Ecoli_Load (Log CFU/g)") +
+  theme_minimal()
+
+print(boxplot_gg)
+
+# 3. Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
+lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ REP) +  # Separate lines for each replicate
+  ggtitle("Ecoli_Load Over Time by aw Levels and REP") +
+  xlab("Day") +
+  ylab("Ecoli_Load (Log CFU/g)") +
+  theme_minimal()
+
+print(lineplot_gg)
+
+```
+
+#QQ Plot: *Interpretation:*
+
+This QQ plot suggests that the distribution of Ecoli_Load departs from normality, particularly in the tails. This might indicate the presence of outliers or a skewed distribution. Depending on the extent of the deviation, you might consider transformations (e.g., log or Box-Cox) or using non-parametric methods if normality is an important assumption for further analysis.
+
+```{r}
+head(Data_1)
+```
+
+```{r}
+library(lme4)
+# Fit a mixed model with REP as a random effect
+model <- lmer(Ecoli_Load ~ Flour + aw + Day + (1 | REP), data = Data_1)
+
+# Check the summary
+summary(model)
+
+```
+
+```{r}
+library(lme4)
+library(lmerTest)
+# Fit a mixed model with REP as a random effect
+model <- lmer(Ecoli_Load ~ aw + Day + aw * Day + (1 | REP), data = Data_1)
+
+# Check the summary
+summary(model)
+```
+
+## Interpretation:
+
+Model: Y=
+
+The output from mixed effects model with the interaction term between aw and Day provides the following results:
+
+*Intercept (E. coli load when both aw and Day are zero):* 6.29789 6.29789, highly significant with 𝑝\<0.001 p\<0.001.
+
+*aw (Effect of water activity alone):* 0.18945, not statistically significant with p=0.8241.
+
+*Day (Effect of day alone):*
+
+−0.02417, statistically significant with p=0.0098, indicating that E. coli load decreases over days.
+
+*(Interaction effect between water activity and day):*
+
+−0.01500, not statistically significant with p=0.3701, suggesting the interaction does not significantly affect the E. coli load.
+
+#Conclusions:
+
+Day has a significant negative effect on E. coli load, indicating that as days progress, E. coli load decreases.
+The interaction between aw and Day is not significant, implying that the effect of days on E. coli load does not vary by different levels of water activity.
+
+```{r}
+# Extract residuals and fitted values
+residuals <- resid(model)
+fitted_values <- fitted(model)
+
+# Histogram of residuals
+hist(residuals, main="Histogram of Residuals", xlab="Residuals")
+
+# Q-Q Plot
+qqnorm(residuals)
+qqline(residuals, col = "red")
+
+# Shapiro-Wilk Test for normality
+shapiro.test(residuals)
+
+```
+The histogram and QQ Plot showing that the model following the Assumption. So we can fit this model
+
+
+#Model Comparison
+```{r}
+# Fit the model without the interaction term
+model_simple <- lmer(Ecoli_Load ~ aw + Day + (1 | REP), data = Data_1)
+
+# Compare the models using ANOVA
+anova(model_simple, model)
+
+```
+#Interpretation:
+
+Chi-Square Test Statistic: The Chi-Square value (0.8142) measures the difference in fit between the two models.
+
+p-value: The p-value (0.3669) is greater than the typical significance level of 0.05.
+Since the p-value is greater than 0.05, you fail to reject the null hypothesis that the simpler model (without the interaction term) is as good as the full model (with the interaction term). This suggests that the interaction term does not significantly improve the fit of the model.
+
+So, we can use the model without the interaction effect.
+
+#Residual VS Fitted Plot
+
+```{r}
+# Define observed values from the data
+observed_values <- Data_1$Ecoli_Load  # Assuming Data_1 is your data frame and Ecoli_Load is the response variable
+
+# Set up the plotting area to have 2 rows and 2 columns
+par(mfrow=c(2, 2))
+
+# Plot 1: Residuals vs. Fitted Values
+plot(fitted_values, residuals, main="Residuals vs Fitted Values", xlab="Fitted Values", ylab="Residuals")
+abline(h=0, col="red")
+
+# Plot 2: Q-Q Plot of Residuals
+qqnorm(residuals, main="Q-Q Plot of Residuals")
+qqline(residuals, col = "red")
+
+# Plot 3: Histogram of Residuals
+hist(residuals, main="Histogram of Residuals", xlab="Residuals", breaks=20)
+
+# Plot 4: Predicted vs. Observed Values
+plot(observed_values, fitted_values, main="Predicted vs Observed Values", xlab="Observed Values", ylab="Predicted Values")
+abline(a=0, b=1, col="red")
+
+# Reset plotting layout to default (optional)
+par(mfrow=c(1, 1))
+
+```
+
+
+
+#Not Sure
+
+```{r}
+#| echo: false
+library(lme4)
+lme_model <- lmer(Ecoli_Load ~ aw * Day + (1|REP), data = Data_1)
+library(car)
+library(lme4)
+glmm_model_full <- glmer(Ecoli_Load ~ aw * Day + (1|REP), 
+                         family = poisson(link = "log"), data = Data_1)
+anova(glmm_model_full, Type = "III", test = "Chisq")
+# Get a summary of the model
+summary(glmm_model_full)
+
+
+```
+
+```{r}
+#| echo: false
+library(lme4)
+glmm_model_full <- glmer(Ecoli_Load ~ aw * Day + (1|REP), 
+                         family = poisson(link = "log"), data = Data_1)
+
+```
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+```{r}
+#| echo: false
+2 * 2
+```
