@@ -4,8 +4,6 @@ format: html
 editor: visual
 ---
 
-## 
-
 ### Introduction
 
 The data described below deals with three different types of flour that were inoculated with E. coli. The goal was to study the survival persistence of E. coli. Each type of flour was given three different levels of water and the colony-forming-unit (CFU) per gram was measured at ten unequally spaced time points.
@@ -15,6 +13,27 @@ The data described below deals with three different types of flour that were ino
 The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable *Flour*. The variable *aw* measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. *Day* and *REP* record the day and repetition respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled *Ecoli_Load* in the data set.
 
 There are some differences in the log of CFU/g we can get from the data set right away. Buck flour has a mean log CFU/g of roughly 5.49, median of 5.59, and standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics are roughly 4.61, 4.67, and 1.27 respectively for wheat flour. These differences will become more apparent in some of the graphs below.
+
+
+#### Distribution of E.coli Measurements
+
+The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g.
+
+
+
+```{r}
+#| echo: false
+Data_1 <- read.csv("Data-1.csv")
+qqnorm(Data_1$Ecoli_Load)
+qqline(Data_1$Ecoli_Load, col = "red")
+
+hist(Data_1$Ecoli_Load)
+
+```
+
+EXPLAIN!!!
+
+
 
 #### Box plot
 
@@ -27,7 +46,7 @@ We can begin by looking at a box plot of to see if there are differences in the 
 Data_1 <- read.csv("Data-1.csv")
 
 
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 Data_1 %>%
   group_by(Flour) %>%
   summarise(
@@ -95,16 +114,13 @@ The interaction plot above shows that higher water levels seem to increase the E
 
 #### Plot over time
 
-Below is a plot of our E.coli measurements over time. There is a trend with the E.coli levels going down over time. This will need to be explored further.
+Below is a plot of our E.coli measurements over time. There is a trend with the E.coli levels going down over time. \[This will need to be explored further.\]
 
 ```{r}
 #| echo: false
 plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", main = "E.Coli Measurments over Time")
 
 ```
-
-
-
 
 ### ANOVA Tables
 
@@ -133,23 +149,31 @@ summary(interaction_aov)
 ```{r}
 #| echo: false
 interaction_aov2 <- aov(Ecoli_Load ~ Flour * Day + aw * Flour, data = Data_1)
-#summary(interaction_aov2)
+summary(interaction_aov2)
 
 ```
 
-### Accounting for Repetitions
+### Accounting for Replications
 
 Another variable included in the data set is *REP* which measures the repetitions. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a mixed model. The resulting ANOVA table is below.
 
 ```{r}
 #| echo: false
-library(lme4)
+suppressPackageStartupMessages(library(lme4))
 
 # Mixed-effects model
 interaction_mixed <- lmer(Ecoli_Load ~ Flour * Day + aw * Flour + (1 | REP), data = Data_1)
 anova(interaction_mixed)
 
 ```
+
+**Interpretation:**
+
+Main Effect: Flour: E. coli load varies significantly among different flour types (p \< 0.001). Day: E. coli load changes significantly over time (p \< 0.001). aw: Water activity does not significantly affect E. coli load (p = 0.364).
+
+Interaction Effect: Flour : The interaction between flour type and day is highly significant (p \< 0.001). Flour : The interaction between flour type and water activity is also significant (p = 0.005). Overall, flour type and day have strong effects on E. coli load, with significant interactions involving both factors and water activity.
+
+Overall, the significant interactions suggest that the relationships between E. coli load and the factors of flour type, day, and water activity are complex and not simply additive. The model indicates that both flour type and day have substantial effects on E. coli load, and their interaction with each other and with water activity should be considered in this analysis
 
 ### Checking Assumptions of the Potential Model
 
@@ -173,7 +197,7 @@ The histogram below seems to be somewhat symmetrical around zero with a rough be
 
 ```{r}
 #| echo: false
-library(ggplot2)
+suppressPackageStartupMessages(library(ggplot2))
 ggplot(data = NULL, aes(x = residuals)) +
   geom_histogram(bins = 30, fill = "lightblue", color = "black") +
   labs(x = "Residuals", y = "Frequency", title = "Histogram of Residuals") +
@@ -194,145 +218,10 @@ ggplot(data = NULL, aes(x = fitted_values, y = residuals)) +
   theme_minimal()
 ```
 
-```{r}
-#| echo: false
-
-```
+###Checking all assumptions This graphs are showing that the model should be well fitted by holding all assumptions.
 
 ```{r}
 #| echo: false
-
-```
-
-### Model
-
-After checking the assumptions we can confirm our model is
-
-$$
-log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
-$$
-
-where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
-
-
-
-
-
-
-
-# Toma's work I have not gone through yet.
-
-
-
-## Line Plot:
-
-This plot shows the E. coli Load (Log CFU/g) over time across different levels of water activity (aw) and replicates (REP). The plot is separated by three panels representing replicates 1, 2, and 3. The x-axis represents Day, while the y-axis represents E. coli Load (Log CFU/g). Different colors are used to represent different levels of water activity (aw) (0.45, 0.55, and 0.65).
-
-Key Observations: General Trend:
-
-Across all replicates, there is a general decline in E. coli load over time. This indicates that the bacterial load decreases as the number of days increases, which is expected as time progresses during storage or treatment. Effect of Water Activity (aw):
-
-The red points represent aw = 0.45, green points represent aw = 0.55, and blue points represent aw = 0.65. Although there is some variability, aw = 0.65 (blue) generally tends to result in a lower E. coli load compared to the lower levels of water activity (0.45 and 0.55). This is especially noticeable toward the end of the time period (Day 90). This suggests that higher water activity could be associated with more rapid reduction in E. coli load.
-
-Replicate Effects:
-
-There are three replicates (panels labeled 1, 2, and 3), and there seems to be some variation in patterns between replicates. For example: In Replicate 1, the initial E. coli load is higher, and the decline appears more gradual compared to the other two replicates. In Replicates 2 and 3, the load starts high but drops sharply around Days 30-60, suggesting a faster reduction in these replicates. While the overall pattern is similar across replicates, the exact magnitude of reduction and variability differs, indicating some possible random variation or replicate-specific conditions.
-
-Interaction Between Time and Water Activity:
-
-There seems to be a significant interaction between time and aw levels. Over time, the aw = 0.65 condition (blue points) tends to drop more steeply, whereas lower aw levels (0.45 and 0.55) maintain a higher E. coli load for longer periods. This could suggest that water activity has a substantial effect on the persistence of E. coli and that higher aw values promote faster reductions in bacterial load.
-
-Conclusion: The plot visually confirms that E. coli load decreases over time, and this decline is influenced by the water activity level. Specifically, higher aw (0.65) appears to lead to a faster decline in E. coli compared to the lower aw levels. Additionally, while there is some variability between the replicates, the overall trend remains consistent across all replicates.
-
-```{r}
-
-```
-
-## Fitting Mixed Model
-
-```{r}
-library(lme4)
-# Fit a mixed model with REP as a random effect
-model <- lmer(Ecoli_Load ~ Flour + aw + Day + (1 | REP), data = Data_1)
-
-# Check the summary
-summary(model)
-
-```
-
-```{r}
-library(lme4)
-library(lmerTest)
-# Fit a mixed model with REP as a random effect
-model <- lmer(Ecoli_Load ~ aw + Day + aw * Day + (1 | REP), data = Data_1)
-
-# Check the summary
-summary(model)
-```
-
-## Interpretation:
-
-Model: Y=
-
-The output from mixed effects model with the interaction term between *aw* and *Day* provides the following results:
-
-*Intercept (E. coli load when both aw and Day are zero):* 6.29789 6.29789, highly significant with 𝑝\<0.001 p\<0.001.
-
-*aw (Effect of water activity alone):* 0.18945, not statistically significant with p=0.8241.
-
-*Day (Effect of day alone):*
-
-−0.02417, statistically significant with p=0.0098, indicating that E. coli load decreases over days.
-
-*(Interaction effect between water activity and day):*
-
-−0.01500, not statistically significant with p=0.3701, suggesting the interaction does not significantly affect the E. coli load.
-
-#Conclusions:
-
-Day has a significant negative effect on E. coli load, indicating that as days progress, E. coli load decreases. The interaction between aw and Day is not significant, implying that the effect of days on E. coli load does not vary by different levels of water activity.
-
-```{r}
-# Extract residuals and fitted values
-residuals <- resid(model)
-fitted_values <- fitted(model)
-
-# Histogram of residuals
-hist(residuals, main="Histogram of Residuals", xlab="Residuals")
-
-# Q-Q Plot
-qqnorm(residuals)
-qqline(residuals, col = "red")
-
-# Shapiro-Wilk Test for normality
-shapiro.test(residuals)
-
-```
-
-The histogram and QQ Plot showing that the model following the Assumption. So we can fit this model
-
-#Model Comparison
-
-```{r}
-# Fit the model without the interaction term
-model_simple <- lmer(Ecoli_Load ~ aw + Day + (1 | REP), data = Data_1)
-
-# Compare the models using ANOVA
-anova(model_simple, model)
-
-```
-
-#Interpretation:
-
-Chi-Square Test Statistic: The Chi-Square value (0.8142) measures the difference in fit between the two models.
-
-p-value: The p-value (0.3669) is greater than the typical significance level of 0.05. Since the p-value is greater than 0.05, you fail to reject the null hypothesis that the simpler model (without the interaction term) is as good as the full model (with the interaction term). This suggests that the interaction term does not significantly improve the fit of the model.
-
-So, we can use the model without the interaction effect.
-
-#Residual VS Fitted Plot
-
-```{r}
 # Define observed values from the data
 observed_values <- Data_1$Ecoli_Load  # Assuming Data_1 is your data frame and Ecoli_Load is the response variable
 
@@ -356,5 +245,139 @@ abline(a=0, b=1, col="red")
 
 # Reset plotting layout to default (optional)
 par(mfrow=c(1, 1))
+```
+
+### Linear Mixed Model
+
+After checking the assumptions we can confirm our model is
+
+$$
+log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
+$$
+
+where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
+
+### Generalized Linear Mixed Model
+
+```{r}
+#| echo: false
+
+suppressPackageStartupMessages(library(lmerTest))
+suppressPackageStartupMessages(library(glmmTMB))
+
+
+# GLMM with Gaussian distribution for continuous response variable
+glmm_model <- glmer(Ecoli_Load ~ Flour + Day + aw +  aw * Day + (1|REP), 
+                    family = gaussian(link = "identity"), 
+                    data = Data_1)
+summary(glmm_model)
+anova(glmm_model)
+```
+
+As this Model is giving us warning about using Gaussian Link, we are trying to fit the GLMM with gamma distribution.
+
+#GLMM with Gamma Distribution
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(lme4))
+# GLMM with Gamma distribution using log link function
+glmm_model_gamma <- glmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * aw * Day + (1 | REP), 
+                          family = Gamma(link = "log"), 
+                          data = Data_1)
+
+# Summary of the model
+summary(glmm_model_gamma)
+
+```
+
+As the Model is nearly unidentifiable: very large eigenvalue, we will rescale the Day and aw variables for better fitting.
+
+#GLMM with Scaled_variable
+
+The model reveals significant effects and interactions between flour types, days, and water activity on E. coli load, with some complex interactions especially involving cake flour
+
+```{r}
+#| echo: false
+# Rescale Day and aw (mean 0, SD 1)
+Data_1$Day_scaled <- scale(Data_1$Day)
+Data_1$aw_scaled <- scale(Data_1$aw)
+
+# Refit the model with scaled variables
+glmm_model_gamma_scaled <- glmer(Ecoli_Load ~ Flour + Day_scaled + aw_scaled + 
+                                 aw_scaled * Day_scaled + Flour * aw_scaled * Day_scaled + 
+                                 (1 | REP), 
+                                 family = Gamma(link = "log"), 
+                                 data = Data_1)
+
+# Summary of the scaled model
+summary(glmm_model_gamma_scaled)
+```
+
+### Plot with GLMM
+
+```{r}
+#| echo: false
+# Load necessary libraries
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(lme4))
+suppressPackageStartupMessages(library(dplyr))
+
+# Create new data for predictions
+new_data <- expand.grid(
+  Day_scaled = seq(min(Data_1$Day_scaled), max(Data_1$Day_scaled), length.out = 100),
+  aw_scaled = mean(Data_1$aw_scaled),  # Set average aw value for prediction
+  Flour = unique(Data_1$Flour),
+  REP = unique(Data_1$REP)
+)
+
+# Generate predictions from the model
+new_data$predicted <- predict(glmm_model_gamma_scaled, newdata = new_data, re.form = NA)
+
+# Plot the predicted values
+ggplot(new_data, aes(x = Day_scaled, y = predicted, color = Flour, group = Flour)) +
+  geom_line(size = 1) +
+  labs(title = "Predicted E. coli Load Over Time by Flour Type",
+       x = "Scaled Day",
+       y = "Predicted E. coli Load (Log Scale)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+```
+
+### Model Comparison
+
+LM model AIC: 500.80 (lower is better) GLMM model AIC: 576.4 The LM model has a lower AIC, indicating a better fit based on this criterion.
+
+BIC:
+
+LM model BIC: 547.58 (lower is better) GLMM model BIC: 626.8 The LM model also has a lower BIC, further suggesting it is the better model by this criterion.
+
+***Conclusion:*** AIC and BIC both indicate that the LM model fits the data better than the GLMM. However, model choice should also consider the assumptions about the data distribution:
+
+```{r}
+#| echo: false
+# Load the necessary library
+suppressPackageStartupMessages(library(lme4))
+
+# Fit the LM model
+interaction_mixed <- lmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * Day * aw + (1 | REP), data = Data_1)
+
+# Extract log-likelihood
+logLik_LM <- logLik(interaction_mixed)
+
+# Number of parameters
+num_params_LM <- length(fixef(interaction_mixed)) + length(VarCorr(interaction_mixed)$REP)
+
+# Number of observations
+n_LM <- nrow(Data_1)
+
+# Calculate AIC and BIC
+AIC_LM <- -2 * logLik_LM + 2 * num_params_LM
+BIC_LM <- -2 * logLik_LM + num_params_LM * log(n_LM)
+
+# Print AIC and BIC for the LM model
+c(AIC_LM , BIC_LM)
+
 
 ```
