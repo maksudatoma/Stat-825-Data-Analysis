@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data Analysis-1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Summary_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Summary_files/libs/quarto-html/quarto.js"></script>
+<script src="Summary_files/libs/quarto-html/popper.min.js"></script>
+<script src="Summary_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Summary_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Summary_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Summary_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Summary_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Summary_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Summary_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Analysis-1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<p>The data described below deals with three different types of flour that were inoculated with E. coli. The goal was to study the survival persistence of E. coli. Each type of flour was given three different levels of water and the colony-forming-unit (CFU) per gram was measured at ten unequally spaced time points.</p>
+</section>
+<section id="about-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="about-the-data">About the data</h3>
+<p>The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable <em>Flour</em>. The variable <em>aw</em> measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. <em>Day</em> and <em>REP</em> record the day and repetition respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled <em>Ecoli_Load</em> in the data set.</p>
+<p>There are some differences in the log of CFU/g we can get from the data set right away. Buck flour has a mean log CFU/g of roughly 5.49, median of 5.59, and standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics are roughly 4.61, 4.67, and 1.27 respectively for wheat flour. These differences will become more apparent in some of the graphs below.</p>
+<section id="distribution-of-e.coli-measurements" class="level4">
+<h4 class="anchored" data-anchor-id="distribution-of-e.coli-measurements">Distribution of E.coli Measurements</h4>
+<p>The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>EXPLAIN!!!</p>
+</section>
+<section id="box-plot" class="level4">
+<h4 class="anchored" data-anchor-id="box-plot">Box plot</h4>
+<p>We can begin by looking at a box plot of to see if there are differences in the log of CFU/g in the three types of flour.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  Flour Mean_Ecoli_Load Median_Ecoli_Load SD_Ecoli_Load
+  &lt;chr&gt;           &lt;dbl&gt;             &lt;dbl&gt;         &lt;dbl&gt;
+1 Buck             5.49              5.59         0.855
+2 Cake             5.54              5.91         1.73 
+3 Wheat            4.61              4.66         1.27 </code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In the box plot above, we can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.</p>
+<p>From both the plot above and the metrics discussed earlier we can say cake flour tends to have the highest E. coli load, followed by buck flour, then wheat flour. This indicates that the type of flour may play a role in the persistence of E. coli.</p>
+<p>This visualization supports the results from your Tukey HSD test, showing that Wheat Flour significantly differs from both Cake and Buck in terms of E. coli load</p>
+</section>
+<section id="anova-table-for-flour" class="level4">
+<h4 class="anchored" data-anchor-id="anova-table-for-flour">ANOVA Table for Flour</h4>
+<p>To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>             Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+Flour         2   49.0  24.493   13.73 2.11e-06 ***
+Residuals   267  476.3   1.784                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>We can see the relationship between the type of flour and the log of CFU/g of E.coli is highly significant. Now we will look at contrasts based on the type of flour. Since we are comparing the effect three different flour types have on the E.coli measurement, we should use Tukey’s Honest Significant Difference (HSD) test. This method is less likely to result in a false positive, also called a type I error, when comparing multiple treatments.</p>
+<p>(https://www.blackwellpublishing.com/specialarticles/jcn_8_304.pdf)</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Ecoli_Load ~ Flour, data = Data_1)
+
+$Flour
+                  diff        lwr        upr     p adj
+Cake-Buck   0.04666667 -0.4226149  0.5159482 0.9701759
+Wheat-Buck -0.87933333 -1.3486149 -0.4100518 0.0000433
+Wheat-Cake -0.92600000 -1.3952815 -0.4567185 0.0000155</code></pre>
+</div>
+</div>
+<p>Tukey’s HSD test indicates significant differences in our E. coli measurement between wheat and both buck and cake flour types. There is no significant difference between cake and buck flour types.</p>
+</section>
+</section>
+<section id="other-variables" class="level3">
+<h3 class="anchored" data-anchor-id="other-variables">Other variables</h3>
+<p>As discussed previously, the data comes with other variables as well. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.</p>
+<section id="water-activity-interaction-plot" class="level4">
+<h4 class="anchored" data-anchor-id="water-activity-interaction-plot">Water Activity Interaction Plot</h4>
+<p>First let’s consider an interaction plot, which shows how the E.coli levels for the types of flour changes with different water activity.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph.</p>
+</section>
+<section id="plot-over-time" class="level4">
+<h4 class="anchored" data-anchor-id="plot-over-time">Plot over time</h4>
+<p>Below is a plot of our E.coli measurements over time. There is a trend with the E.coli levels going down over time. [This will need to be explored further.]</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="anova-tables" class="level3">
+<h3 class="anchored" data-anchor-id="anova-tables">ANOVA Tables</h3>
+<p>Using the variables that were just graphically investigated, let’s create a linear model to see the statistical effect <em>Flour</em>, <em>Day</em>, and <em>aw</em> have on the E.coli measurement, which is still in log form.</p>
+<p>In the ANOVA below <em>Flour</em>, <em>Day</em>, and <em>aw</em> are considered independent variables, while the E.coli measurement is the dependent variable.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>             Df Sum Sq Mean Sq F value Pr(&gt;F)    
+Flour         2   49.0    24.5  53.613 &lt;2e-16 ***
+Day           1  355.0   355.0 777.155 &lt;2e-16 ***
+aw            1    0.2     0.2   0.514  0.474    
+Residuals   265  121.1     0.5                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Above we can see the type of flour is still highly significant, as is the variable <em>Day</em>, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study so it will remain in the model for now.</p>
+<p>One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both <em>Flour</em> and <em>Day</em> are still highly significant, but we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both <em>aw</em> and its interaction with <em>Flour</em> in the model. The interaction between water activity and the day along with the interaction of all three can be removed.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>              Df Sum Sq Mean Sq  F value  Pr(&gt;F)    
+Flour          2   49.0    24.5   83.748 &lt; 2e-16 ***
+Day            1  355.0   355.0 1213.982 &lt; 2e-16 ***
+aw             1    0.2     0.2    0.803 0.37116    
+Flour:Day      2   40.9    20.5   69.925 &lt; 2e-16 ***
+Flour:aw       2    3.1     1.5    5.244 0.00586 ** 
+Day:aw         1    0.5     0.5    1.733 0.18923    
+Flour:Day:aw   2    1.1     0.6    1.941 0.14569    
+Residuals    258   75.5     0.3                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>             Df Sum Sq Mean Sq  F value  Pr(&gt;F)    
+Flour         2   49.0    24.5   82.917 &lt; 2e-16 ***
+Day           1  355.0   355.0 1201.943 &lt; 2e-16 ***
+aw            1    0.2     0.2    0.795 0.37353    
+Flour:Day     2   40.9    20.5   69.232 &lt; 2e-16 ***
+Flour:aw      2    3.1     1.5    5.192 0.00615 ** 
+Residuals   261   77.1     0.3                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+</section>
+<section id="accounting-for-replications" class="level3">
+<h3 class="anchored" data-anchor-id="accounting-for-replications">Accounting for Replications</h3>
+<p>Another variable included in the data set is <em>REP</em> which measures the repetitions. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a mixed model. The resulting ANOVA table is below.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'Matrix' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+          npar Sum Sq Mean Sq   F value
+Flour        2  48.99   24.49   86.3207
+Day          1 355.05  355.05 1251.2775
+aw           1   0.23    0.23    0.8272
+Flour:Day    2  40.90   20.45   72.0735
+Flour:aw     2   3.07    1.53    5.4049</code></pre>
+</div>
+</div>
+<p><strong>Interpretation:</strong></p>
+<p>Main Effect: Flour: E. coli load varies significantly among different flour types (p &lt; 0.001). Day: E. coli load changes significantly over time (p &lt; 0.001). aw: Water activity does not significantly affect E. coli load (p = 0.364).</p>
+<p>Interaction Effect: Flour : The interaction between flour type and day is highly significant (p &lt; 0.001). Flour : The interaction between flour type and water activity is also significant (p = 0.005). Overall, flour type and day have strong effects on E. coli load, with significant interactions involving both factors and water activity.</p>
+<p>Overall, the significant interactions suggest that the relationships between E. coli load and the factors of flour type, day, and water activity are complex and not simply additive. The model indicates that both flour type and day have substantial effects on E. coli load, and their interaction with each other and with water activity should be considered in this analysis</p>
+</section>
+<section id="checking-assumptions-of-the-potential-model" class="level3">
+<h3 class="anchored" data-anchor-id="checking-assumptions-of-the-potential-model">Checking Assumptions of the Potential Model</h3>
+<p>Before declaring a model, we should check whether the model corresponding to the ANOVA table above violates any assumptions around mixed models.</p>
+<p>The first plot is a QQ plot. A QQ plot is designed to check the assumption that the residuals are normally distributed. It does this by comparing the residuals from the model with the theoretical residuals that would be expected from a normal distribution. If the two form a mostly straight line on a 45 degree angle, then the assumption likley holds.</p>
+<p>The QQ plot below does seem to form that 45 degree line. While the ends are not on the line this is not something to be overly worried about given the general trend below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Another way to check this assumption is by using a histogram of the residuals. Ideally, the residuals form a bell shape, which indicates they approximately follow a normal distribution.</p>
+<p>The histogram below seems to be somewhat symmetrical around zero with a rough bell shape. This, along with the QQ plot above means the normality assumption likely hols.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be donw through the residuals vs.&nbsp;fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>###Checking all assumptions This graphs are showing that the model should be well fitted by holding all assumptions.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="linear-mixed-model" class="level3">
+<h3 class="anchored" data-anchor-id="linear-mixed-model">Linear Mixed Model</h3>
+<p>After checking the assumptions we can confirm our model is</p>
+<p><span class="math display">\[
+log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
+\]</span></p>
+<p>where <span class="math inline">\(\beta_b\)</span> for <span class="math inline">\(b=1,2,3,4,5\)</span> represent the fixed effect coefficients, <span class="math inline">\(u_{j}\)</span> represents the random effect associated with <em>REP</em>, and <span class="math inline">\(\epsilon_{ijk}\)</span> is the error term.</p>
+</section>
+<section id="generalized-linear-mixed-model" class="level3">
+<h3 class="anchored" data-anchor-id="generalized-linear-mixed-model">Generalized Linear Mixed Model</h3>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lmerTest' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'glmmTMB' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in glmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + (1 | REP), family =
+gaussian(link = "identity"), : calling glmer() with family=gaussian (identity
+link) as a shortcut to lmer() is deprecated; please call lmer() directly</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: Ecoli_Load ~ Flour + Day + aw + aw * Day + (1 | REP)
+   Data: Data_1
+
+REML criterion at convergence: 573.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.3118 -0.6073 -0.0457  0.4971  3.0729 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ REP      (Intercept) 0.01508  0.1228  
+ Residual             0.44638  0.6681  
+Number of obs: 270, groups:  REP, 3
+
+Fixed effects:
+             Estimate Std. Error t value
+(Intercept)  6.575441   0.409329  16.064
+FlourCake    0.046667   0.099597   0.469
+FlourWheat  -0.879333   0.099597  -8.829
+Day         -0.024170   0.007829  -3.087
+aw           0.189450   0.717626   0.264
+Day:aw      -0.015002   0.014079  -1.065
+
+Correlation of Fixed Effects:
+           (Intr) FlorCk FlrWht Day    aw    
+FlourCake  -0.122                            
+FlourWheat -0.122  0.500                     
+Day        -0.702  0.000  0.000              
+aw         -0.964  0.000  0.000  0.712       
+Day:aw      0.694  0.000  0.000 -0.989 -0.720</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+       npar Sum Sq Mean Sq  F value
+Flour     2  48.99   24.49  54.8705
+Day       1 355.05  355.05 795.3856
+aw        1   0.23    0.23   0.5258
+Day:aw    1   0.51    0.51   1.1353</code></pre>
+</div>
+</div>
+<p>As this Model is giving us warning about using Gaussian Link, we are trying to fit the GLMM with gamma distribution.</p>
+<p>#GLMM with Gamma Distribution</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :
+Model failed to converge with max|grad| = 0.0100773 (tol = 0.002, component 1)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, : Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?;Model is nearly unidentifiable: large eigenvalue ratio
+ - Rescale variables?</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Gamma  ( log )
+Formula: Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * aw * Day +  
+    (1 | REP)
+   Data: Data_1
+
+     AIC      BIC   logLik deviance df.resid 
+   576.4    626.8   -274.2    548.4      256 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.3102 -0.5338 -0.0775  0.4667  4.2702 
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ REP      (Intercept) 0.0001468 0.01211 
+ Residual             0.0170995 0.13077 
+Number of obs: 270, groups:  REP, 3
+
+Fixed effects:
+                   Estimate Std. Error t value Pr(&gt;|z|)    
+(Intercept)        1.730082   0.124979  13.843  &lt; 2e-16 ***
+FlourCake          0.229794   0.181989   1.263 0.206703    
+FlourWheat         0.050922   0.180112   0.283 0.777388    
+Day               -0.003454   0.002171  -1.591 0.111580    
+aw                 0.185528   0.224047   0.828 0.407627    
+Day:aw            -0.000588   0.003913  -0.150 0.880545    
+FlourCake:aw      -0.018027   0.327827  -0.055 0.956147    
+FlourWheat:aw     -0.230740   0.324100  -0.712 0.476501    
+FlourCake:Day      0.003677   0.003305   1.113 0.265909    
+FlourWheat:Day    -0.005086   0.003235  -1.572 0.115912    
+FlourCake:Day:aw  -0.019828   0.005962  -3.326 0.000882 ***
+FlourWheat:Day:aw  0.003285   0.005822   0.564 0.572621    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) FlorCk FlrWht Day    aw     Day:aw FlrCk: FlrWh: FlrC:D
+FlourCake   -0.657                                                        
+FlourWheat  -0.669  0.446                                                 
+Day         -0.640  0.403  0.415                                          
+aw          -0.983  0.651  0.663  0.634                                   
+Day:aw       0.630 -0.396 -0.408 -0.984 -0.644                            
+FlourCake:w  0.648 -0.987 -0.440 -0.397 -0.660  0.404                     
+FlourWhet:w  0.661 -0.440 -0.988 -0.409 -0.673  0.417  0.446              
+FlourCak:Dy  0.385 -0.674 -0.252 -0.602 -0.381  0.592  0.665  0.248       
+FlourWht:Dy  0.401 -0.255 -0.664 -0.627 -0.397  0.616  0.251  0.655  0.381
+FlorCk:Dy:w -0.379  0.664  0.248  0.591  0.388 -0.602 -0.675 -0.253 -0.985
+FlrWht:Dy:w -0.395  0.251  0.654  0.617  0.405 -0.629 -0.256 -0.664 -0.375
+            FlrW:D FlC:D:
+FlourCake                
+FlourWheat               
+Day                      
+aw                       
+Day:aw                   
+FlourCake:w              
+FlourWhet:w              
+FlourCak:Dy              
+FlourWht:Dy              
+FlorCk:Dy:w -0.374       
+FlrWht:Dy:w -0.986  0.382
+optimizer (Nelder_Mead) convergence code: 0 (OK)
+Model failed to converge with max|grad| = 0.0100773 (tol = 0.002, component 1)
+Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?
+Model is nearly unidentifiable: large eigenvalue ratio
+ - Rescale variables?</code></pre>
+</div>
+</div>
+<p>As the Model is nearly unidentifiable: very large eigenvalue, we will rescale the Day and aw variables for better fitting.</p>
+<p>#GLMM with Scaled_variable</p>
+<p>The model reveals significant effects and interactions between flour types, days, and water activity on E. coli load, with some complex interactions especially involving cake flour</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Gamma  ( log )
+Formula: 
+Ecoli_Load ~ Flour + Day_scaled + aw_scaled + aw_scaled * Day_scaled +  
+    Flour * aw_scaled * Day_scaled + (1 | REP)
+   Data: Data_1
+
+     AIC      BIC   logLik deviance df.resid 
+   576.4    626.8   -274.2    548.4      256 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.3102 -0.5338 -0.0776  0.4666  4.2702 
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ REP      (Intercept) 0.0001467 0.01211 
+ Residual             0.0170995 0.13077 
+Number of obs: 270, groups:  REP, 3
+
+Fixed effects:
+                                 Estimate Std. Error t value Pr(&gt;|z|)    
+(Intercept)                      1.693489   0.018283  92.625  &lt; 2e-16 ***
+FlourCake                       -0.045392   0.019843  -2.288  0.02216 *  
+FlourWheat                      -0.196326   0.019827  -9.902  &lt; 2e-16 ***
+Day_scaled                      -0.133857   0.013853  -9.663  &lt; 2e-16 ***
+aw_scaled                        0.013417   0.014015   0.957  0.33843    
+Day_scaled:aw_scaled            -0.001719   0.013824  -0.124  0.90101    
+FlourCake:aw_scaled             -0.060999   0.019789  -3.083  0.00205 ** 
+FlourWheat:aw_scaled            -0.009029   0.019823  -0.455  0.64878    
+FlourCake:Day_scaled            -0.256124   0.020178 -12.693  &lt; 2e-16 ***
+FlourWheat:Day_scaled           -0.116195   0.019408  -5.987 2.14e-09 ***
+FlourCake:Day_scaled:aw_scaled  -0.057462   0.019995  -2.874  0.00405 ** 
+FlourWheat:Day_scaled:aw_scaled  0.009545   0.019371   0.493  0.62218    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) FlorCk FlrWht Dy_scl aw_scl Dy_s:_ FlrC:_ FlrW:_ FlC:D_
+FlourCake   -0.543                                                        
+FlourWheat  -0.542  0.500                                                 
+Day_scaled   0.001 -0.001  0.000                                          
+aw_scaled    0.000  0.000  0.000  0.000                                   
+Dy_scld:w_s  0.000  0.000  0.000  0.001 -0.006                            
+FlrCk:w_scl  0.000  0.000  0.000  0.000 -0.708  0.004                     
+FlrWht:w_sc  0.000  0.000  0.000  0.000 -0.707  0.004  0.501              
+FlrCk:Dy_sc -0.001  0.001  0.000 -0.687  0.000 -0.001  0.000  0.000       
+FlrWht:Dy_s -0.001  0.001  0.000 -0.714  0.000 -0.001  0.000  0.000  0.491
+FlrCk:Dy_:_  0.000  0.000  0.000 -0.001  0.004 -0.691 -0.011 -0.003  0.012
+FlrWht:D_:_  0.000  0.000  0.000 -0.001  0.004 -0.714 -0.003 -0.007  0.001
+            FlW:D_ FC:D_:
+FlourCake                
+FlourWheat               
+Day_scaled               
+aw_scaled                
+Dy_scld:w_s              
+FlrCk:w_scl              
+FlrWht:w_sc              
+FlrCk:Dy_sc              
+FlrWht:Dy_s              
+FlrCk:Dy_:_  0.001       
+FlrWht:D_:_ -0.004  0.493</code></pre>
+</div>
+</div>
+</section>
+<section id="plot-with-glmm" class="level3">
+<h3 class="anchored" data-anchor-id="plot-with-glmm">Plot with GLMM</h3>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Summary_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="model-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="model-comparison">Model Comparison</h3>
+<p>LM model AIC: 500.80 (lower is better) GLMM model AIC: 576.4 The LM model has a lower AIC, indicating a better fit based on this criterion.</p>
+<p>BIC:</p>
+<p>LM model BIC: 547.58 (lower is better) GLMM model BIC: 626.8 The LM model also has a lower BIC, further suggesting it is the better model by this criterion.</p>
+<p><strong><em>Conclusion:</em></strong> AIC and BIC both indicate that the LM model fits the data better than the GLMM. However, model choice should also consider the assumptions about the data distribution:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 500.7978 547.5772</code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
