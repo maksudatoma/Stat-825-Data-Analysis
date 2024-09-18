@@ -12,32 +12,29 @@ The data described below deals with three different types of flour that were ino
 
 The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable *Flour*. The variable *aw* measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. *Day* and *REP* record the day and repetition respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled *Ecoli_Load* in the data set.
 
-There are some differences in the log of CFU/g we can get from the data set right away. Buck flour has a mean log CFU/g of roughly 5.49, median of 5.59, and standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics are roughly 4.61, 4.67, and 1.27 respectively for wheat flour. These differences will become more apparent in some of the graphs below.
-
-
 #### Distribution of E.coli Measurements
 
-The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g.
+The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g. To use a linear model or linear mixed model, the independent variable should be approximately normally distributed. We can check this assumption with two plots.
 
-
+The first plot is a histogram. If the data follows an approximate normal distribution, the histogram should follow a bell shape. The histogram below, shows signs of a mild left skew, but this does not mean the data is not approximately normal.
 
 ```{r}
 #| echo: false
 Data_1 <- read.csv("Data-1.csv")
+hist(Data_1$Ecoli_Load)
 qqnorm(Data_1$Ecoli_Load)
 qqline(Data_1$Ecoli_Load, col = "red")
 
-hist(Data_1$Ecoli_Load)
 
 ```
 
-EXPLAIN!!!
+The second plot to consider is the qq plot above. A QQ plot uses theoretical values from a normal distribution as the x-axis, and the observations from the data on the y-axis. If the data is normally distributed, most of the points should fall on a 45 degree line in the positive direction. In our plot we can see that the majority of the points do fall close to this line. There is some values further from the line at both tails, but this is not uncommon.
 
+Looking at both the histogram and the qq plot, the assumption that the log of the E.coli measurements are approximately normally distributed is not clearly violated. Therefore, a linear model or mixed model will be used later, as opposed to the generalized version of either.
 
+#### Impact of Flour Type
 
-#### Box plot
-
-We can begin by looking at a box plot of to see if there are differences in the log of CFU/g in the three types of flour.
+One key question in this study is what effect the flour type has on the E.coli levels. There are some differences in the log of CFU/g we can get from the data set right away as it relates to flour. Buck flour has a mean log CFU/g of roughly 5.49, a median of 5.59, and a standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics for wheat flour are roughly 4.61, 4.67, and 1.27 respectively. These differences will become more apparent in some of the graphs below.
 
 ```{r}
 #| echo: false
@@ -47,26 +44,26 @@ Data_1 <- read.csv("Data-1.csv")
 
 
 suppressPackageStartupMessages(library(dplyr))
-Data_1 %>%
-  group_by(Flour) %>%
-  summarise(
-    Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
-    Median_Ecoli_Load = median(Ecoli_Load, na.rm = TRUE),
-    SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
-  )
+#Data_1 %>%
+#  group_by(Flour) %>%
+#  summarise(
+#    Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+#    Median_Ecoli_Load = median(Ecoli_Load, na.rm = TRUE),
+#    SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
+#  )
 boxplot(Ecoli_Load ~ Flour, data = Data_1, main="Log(E. coli Load) by Flour", xlab="Flour", ylab="Log(E. coli Load)")
 
 ```
 
-In the box plot above, we can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.
+To get an idea of this graphically, let's consider the box plot above. We can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.
 
 From both the plot above and the metrics discussed earlier we can say cake flour tends to have the highest E. coli load, followed by buck flour, then wheat flour. This indicates that the type of flour may play a role in the persistence of E. coli.
 
-This visualization supports the results from your Tukey HSD test, showing that Wheat Flour significantly differs from both Cake and Buck in terms of E. coli load
+To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table. The ANOVA table below is based on a simple linear model, which follows the form \$\$
 
-#### ANOVA Table for Flour
+log((CFU/g)\_{i})=\beta\_0 + \beta\_1 \text{Flour}*i +* \epsilon{i}
 
-To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table.
+\$\$ where $\beta_0$ represents the y-intercept, $\beta_1$ represents the coefficient to the type of flour, for the three flower types which are denoted by $i$. \epsilon\_{i} represents the error. The results of this model can be seen below.
 
 ```{r}
 #| echo: false
@@ -87,13 +84,13 @@ TukeyHSD(aov_results)
 
 Tukey's HSD test indicates significant differences in our E. coli measurement between wheat and both buck and cake flour types. There is no significant difference between cake and buck flour types.
 
-### Other variables
+#### Other variables
 
-As discussed previously, the data comes with other variables as well. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.
+While we have created a simple model, including more information may be an improvement. As discussed previously, the data comes with three other variable. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.
 
-#### Water Activity Interaction Plot
+#### Water Activity
 
-First let's consider an interaction plot, which shows how the E.coli levels for the types of flour changes with different water activity.
+First let's consider the effect water activity has on both the E.coli levels and the types of flour. This can be done through an interaction plot.
 
 ```{r}
 #| echo: false
@@ -110,11 +107,11 @@ interaction.plot(x.factor = Data_1$aw,
 
 ```
 
-The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph.
+The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph. To answer the question of whether this is significant or not, a new model could be fit with water activity added, but first let's consider another variable.
 
-#### Plot over time
+#### Day of Measurement
 
-Below is a plot of our E.coli measurements over time. There is a trend with the E.coli levels going down over time. \[This will need to be explored further.\]
+Knowing how E.coli levels change over time also seems like important information to consider. Below is a plot of our E.coli measurements over time, which comes from the variable *Day*. There is a trend with the E.coli levels going down as the day of the measurement increases.
 
 ```{r}
 #| echo: false
@@ -126,7 +123,7 @@ plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", 
 
 Using the variables that were just graphically investigated, let's create a linear model to see the statistical effect *Flour*, *Day*, and *aw* have on the E.coli measurement, which is still in log form.
 
-In the ANOVA below *Flour*, *Day*, and *aw* are considered independent variables, while the E.coli measurement is the dependent variable.
+In the ANOVA below *Flour*, *Day*, and *aw* are considered independent variables, while the E.coli measurement is the dependent variable, as before.
 
 ```{r}
 #| echo: false
@@ -135,9 +132,9 @@ summary(aov_results2)
 
 ```
 
-Above we can see the type of flour is still highly significant, as is the variable *Day*, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study so it will remain in the model for now.
+Above we can see the type of flour is still highly significant, as is the variable *Day*, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study, so it will remain in the model for now.
 
-One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both *Flour* and *Day* are still highly significant, but we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both *aw* and its interaction with *Flour* in the model. The interaction between water activity and the day along with the interaction of all three can be removed.
+One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both *Flour* and *Day* are still highly significant, and we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both *aw* and its interaction with *Flour* in the model, but may consider removing others.
 
 ```{r}
 #| echo: false
@@ -145,6 +142,8 @@ interaction_aov <- aov(Ecoli_Load ~ Flour * Day * aw, data = Data_1)
 summary(interaction_aov)
 
 ```
+
+The ANOVA results of removing the interaction between water activity and the day along with the interaction of all three are shown below.
 
 ```{r}
 #| echo: false
@@ -155,195 +154,121 @@ summary(interaction_aov2)
 
 ### Accounting for Replications
 
-Another variable included in the data set is *REP* which measures the repetitions. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a mixed model. The resulting ANOVA table is below.
+With three models to consider now, the last variable in the data set, *REP*, should be considered. *REP* measures the replications. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of the mixed model above. The resulting ANOVA table from adding the random effect to our third model is below.
 
 ```{r}
 #| echo: false
 suppressPackageStartupMessages(library(lme4))
+#install.packages("lmerTest")
+suppressPackageStartupMessages(library(lmerTest))
 
 # Mixed-effects model
-interaction_mixed <- lmer(Ecoli_Load ~ Flour * Day + aw * Flour + (1 | REP), data = Data_1)
+interaction_mixed2 <- lmer(Ecoli_Load ~ Flour * Day + aw * Flour + (1 | REP), data = Data_1)
+anova(interaction_mixed2)
+
+```
+
+In this model, which excludes two of the possible interaction terms but has a random , there is a similar level of significance as above.
+
+In the ANOVA below, which includes terms for all possible interactions as well as, there are fewer values that appear significant. The day is considered highly significant when looking at the corresponding p-value, while the type of flour is now only moderately signifcant.
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(lme4))
+#install.packages("lmerTest")
+suppressPackageStartupMessages(library(lmerTest))
+
+# Mixed-effects model
+interaction_mixed <- lmer(Ecoli_Load ~ Flour * Day * aw  + (1 | REP), data = Data_1)
 anova(interaction_mixed)
 
 ```
 
-**Interpretation:**
-
-Main Effect: Flour: E. coli load varies significantly among different flour types (p \< 0.001). Day: E. coli load changes significantly over time (p \< 0.001). aw: Water activity does not significantly affect E. coli load (p = 0.364).
-
-Interaction Effect: Flour : The interaction between flour type and day is highly significant (p \< 0.001). Flour : The interaction between flour type and water activity is also significant (p = 0.005). Overall, flour type and day have strong effects on E. coli load, with significant interactions involving both factors and water activity.
-
-Overall, the significant interactions suggest that the relationships between E. coli load and the factors of flour type, day, and water activity are complex and not simply additive. The model indicates that both flour type and day have substantial effects on E. coli load, and their interaction with each other and with water activity should be considered in this analysis
+When comparing the two mixed models that were used in the ANOVA tables, it would seem excluding two of the interaction terms increases the significance of the other variables in the model. Looking at an ANOVA is not all that must be done to queck the model though.
 
 ### Checking Assumptions of the Potential Model
 
-Before declaring a model, we should check whether the model corresponding to the ANOVA table above violates any assumptions around mixed models.
+Before declaring a model, we should check whether a potential model corresponding to an ANOVA table above violates any assumptions around mixed models.
 
-The first plot is a QQ plot. A QQ plot is designed to check the assumption that the residuals are normally distributed. It does this by comparing the residuals from the model with the theoretical residuals that would be expected from a normal distribution. If the two form a mostly straight line on a 45 degree angle, then the assumption likley holds.
+Let's consider the mixed model that excluded two of the interaction terms first. The four plots below check some of the assumptions that must hold for this model to be used.
 
-The QQ plot below does seem to form that 45 degree line. While the ends are not on the line this is not something to be overly worried about given the general trend below.
+The QQ plot and histogram are similar to what was used above, excpet this time residuals are being plotted instead of E.coli levels. One of our assumptions is that the residuals are normally distributed, and by looking at the two plots, this assumption seems to hold.
 
-```{r}
-#| echo: false
-# QQ Plot
-residuals <- residuals(interaction_mixed)
-qqnorm(residuals)
-qqline(residuals, col = "red")
-```
+Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be done through the residuals vs. fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.
 
-Another way to check this assumption is by using a histogram of the residuals. Ideally, the residuals form a bell shape, which indicates they approximately follow a normal distribution.
-
-The histogram below seems to be somewhat symmetrical around zero with a rough bell shape. This, along with the QQ plot above means the normality assumption likely hols.
-
-```{r}
-#| echo: false
-suppressPackageStartupMessages(library(ggplot2))
-ggplot(data = NULL, aes(x = residuals)) +
-  geom_histogram(bins = 30, fill = "lightblue", color = "black") +
-  labs(x = "Residuals", y = "Frequency", title = "Histogram of Residuals") +
-  theme_minimal()
-```
-
-Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be donw through the residuals vs. fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.
-
-```{r}
-#| echo: false
-fitted_values <- fitted(interaction_mixed)
-
-# Plot residuals vs. fitted values
-ggplot(data = NULL, aes(x = fitted_values, y = residuals)) +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Fitted Values", y = "Residuals", title = "Residuals vs. Fitted Values") +
-  theme_minimal()
-```
-
-###Checking all assumptions This graphs are showing that the model should be well fitted by holding all assumptions.
+The plot in the bottom right corner measures how the values generated by the model compare to the actual values observed in the data set. Most points falling on a 45 degree line is a good sign, as it seems the model's predictions hold up based on our sample.
 
 ```{r}
 #| echo: false
 # Define observed values from the data
 observed_values <- Data_1$Ecoli_Load  # Assuming Data_1 is your data frame and Ecoli_Load is the response variable
 
+fitted_values2 <- fitted(interaction_mixed2)
+residuals2 <- residuals(interaction_mixed2)
+
 # Set up the plotting area to have 2 rows and 2 columns
 par(mfrow=c(2, 2))
-
+par(mar = c(4, 4, 2, 1))
 # Plot 1: Residuals vs. Fitted Values
-plot(fitted_values, residuals, main="Residuals vs Fitted Values", xlab="Fitted Values", ylab="Residuals")
+plot(fitted_values2, residuals2, main="Residuals vs Fitted Values", xlab="Fitted Values", ylab="Residuals")
 abline(h=0, col="red")
 
 # Plot 2: Q-Q Plot of Residuals
-qqnorm(residuals, main="Q-Q Plot of Residuals")
-qqline(residuals, col = "red")
+qqnorm(residuals2, main="Q-Q Plot of Residuals")
+qqline(residuals2, col = "red")
 
 # Plot 3: Histogram of Residuals
-hist(residuals, main="Histogram of Residuals", xlab="Residuals", breaks=20)
+hist(residuals2, main="Histogram of Residuals", xlab="Residuals", breaks=20)
 
 # Plot 4: Predicted vs. Observed Values
-plot(observed_values, fitted_values, main="Predicted vs Observed Values", xlab="Observed Values", ylab="Predicted Values")
+plot(observed_values, fitted_values2, main="Predicted vs Observed Values", xlab="Observed Values", ylab="Predicted Values")
 abline(a=0, b=1, col="red")
 
 # Reset plotting layout to default (optional)
 par(mfrow=c(1, 1))
 ```
 
+Since all of the assumptions discussed above hold, the mixed model including only some interactions can be used.
+
 ### Linear Mixed Model
 
 After checking the assumptions we can confirm our model is
 
 $$
-log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
+\begin{align*}
+\log\left(\frac{CFU}{g}\right)_{ijk} &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
+&\quad + \beta_5 \cdot (\text{aw}_k \times \text{Flour}_i) + u_j + \epsilon_{ijk}
+\end{align*}
 $$
 
 where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
 
-### Generalized Linear Mixed Model
+Now it is time to look at the full summary of our model.
 
 ```{r}
 #| echo: false
-
-suppressPackageStartupMessages(library(lmerTest))
-suppressPackageStartupMessages(library(glmmTMB))
-
-
-# GLMM with Gaussian distribution for continuous response variable
-glmm_model <- glmer(Ecoli_Load ~ Flour + Day + aw +  aw * Day + (1|REP), 
-                    family = gaussian(link = "identity"), 
-                    data = Data_1)
-summary(glmm_model)
-anova(glmm_model)
-```
-
-As this Model is giving us warning about using Gaussian Link, we are trying to fit the GLMM with gamma distribution.
-
-#GLMM with Gamma Distribution
-
-```{r}
-#| echo: false
-suppressPackageStartupMessages(library(lme4))
-# GLMM with Gamma distribution using log link function
-glmm_model_gamma <- glmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * aw * Day + (1 | REP), 
-                          family = Gamma(link = "log"), 
-                          data = Data_1)
-
-# Summary of the model
-summary(glmm_model_gamma)
+coefficients<-
+model_summary <- summary(interaction_mixed2)
+print(model_summary)
 
 ```
 
-As the Model is nearly unidentifiable: very large eigenvalue, we will rescale the Day and aw variables for better fitting.
+Using the estimates above we can rewrite the model as 
+$$
+\begin{align*}
+\log\left(\frac{CFU}{g}\right)_{ijk} &= 5.718458 + 2.717035 \cdot \text{Flour}_{cake} - 0.070328 \cdot \text{Flour}_{wheat} \\
+&\quad - 0.019919 \cdot \text{Day} + 0.913333 \cdot \text{aw} \\
+&\quad - 0.026779 \cdot (\text{Flour}_{cake} \times \text{Day}) - 0.010729 \cdot (\text{Flour}_{wheat} \times \text{Day}) \\
+&\quad - 3.068333 \cdot (\text{Flour}_{cake} \times \text{aw}) - 0.755000 \cdot (\text{Flour}_{wheat} \times \text{aw}) \\
+&\quad + u_j + \epsilon_{ijk}
+\end{align*}
+$$
 
-#GLMM with Scaled_variable
+Note buck flour is not shown.  The reason for this is since the type of flour is a category variable, whenever the type of is buck, all terms involving cake or wheat flour will equal zero, and the remaining terms indicated buck flour.
 
-The model reveals significant effects and interactions between flour types, days, and water activity on E. coli load, with some complex interactions especially involving cake flour
 
-```{r}
-#| echo: false
-# Rescale Day and aw (mean 0, SD 1)
-Data_1$Day_scaled <- scale(Data_1$Day)
-Data_1$aw_scaled <- scale(Data_1$aw)
-
-# Refit the model with scaled variables
-glmm_model_gamma_scaled <- glmer(Ecoli_Load ~ Flour + Day_scaled + aw_scaled + 
-                                 aw_scaled * Day_scaled + Flour * aw_scaled * Day_scaled + 
-                                 (1 | REP), 
-                                 family = Gamma(link = "log"), 
-                                 data = Data_1)
-
-# Summary of the scaled model
-summary(glmm_model_gamma_scaled)
-```
-
-### Plot with GLMM
-
-```{r}
-#| echo: false
-# Load necessary libraries
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(lme4))
-suppressPackageStartupMessages(library(dplyr))
-
-# Create new data for predictions
-new_data <- expand.grid(
-  Day_scaled = seq(min(Data_1$Day_scaled), max(Data_1$Day_scaled), length.out = 100),
-  aw_scaled = mean(Data_1$aw_scaled),  # Set average aw value for prediction
-  Flour = unique(Data_1$Flour),
-  REP = unique(Data_1$REP)
-)
-
-# Generate predictions from the model
-new_data$predicted <- predict(glmm_model_gamma_scaled, newdata = new_data, re.form = NA)
-
-# Plot the predicted values
-ggplot(new_data, aes(x = Day_scaled, y = predicted, color = Flour, group = Flour)) +
-  geom_line(size = 1) +
-  labs(title = "Predicted E. coli Load Over Time by Flour Type",
-       x = "Scaled Day",
-       y = "Predicted E. coli Load (Log Scale)") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
-
-```
+# Need more comparison stuff here -- WHERE RYAN STOPPED
 
 ### Model Comparison
 
