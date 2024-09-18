@@ -98,10 +98,10 @@ window.Quarto = {
 <section id="about-the-data" class="level3">
 <h3 class="anchored" data-anchor-id="about-the-data">About the data</h3>
 <p>The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable <em>Flour</em>. The variable <em>aw</em> measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. <em>Day</em> and <em>REP</em> record the day and repetition respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled <em>Ecoli_Load</em> in the data set.</p>
-<p>There are some differences in the log of CFU/g we can get from the data set right away. Buck flour has a mean log CFU/g of roughly 5.49, median of 5.59, and standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics are roughly 4.61, 4.67, and 1.27 respectively for wheat flour. These differences will become more apparent in some of the graphs below.</p>
 <section id="distribution-of-e.coli-measurements" class="level4">
 <h4 class="anchored" data-anchor-id="distribution-of-e.coli-measurements">Distribution of E.coli Measurements</h4>
-<p>The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g.</p>
+<p>The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g. To use a linear model or linear mixed model, the independent variable should be approximately normally distributed. We can check this assumption with two plots.</p>
+<p>The first plot is a histogram. If the data follows an approximate normal distribution, the histogram should follow a bell shape. The histogram below, shows signs of a mild left skew, but this does not mean the data is not approximately normal.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -118,20 +118,13 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>EXPLAIN!!!</p>
+<p>The second plot to consider is the qq plot above. A QQ plot uses theoretical values from a normal distribution as the x-axis, and the observations from the data on the y-axis. If the data is normally distributed, most of the points should fall on a 45 degree line in the positive direction. In our plot we can see that the majority of the points do fall close to this line. There is some values further from the line at both tails, but this is not uncommon.</p>
+<p>Looking at both the histogram and the qq plot, the assumption that the log of the E.coli measurements are approximately normally distributed is not clearly violated. Therefore, a linear model or mixed model will be used later, as opposed to the generalized version of either.</p>
 </section>
-<section id="box-plot" class="level4">
-<h4 class="anchored" data-anchor-id="box-plot">Box plot</h4>
-<p>We can begin by looking at a box plot of to see if there are differences in the log of CFU/g in the three types of flour.</p>
+<section id="impact-of-flour-type" class="level4">
+<h4 class="anchored" data-anchor-id="impact-of-flour-type">Impact of Flour Type</h4>
+<p>One key question in this study is what effect the flour type has on the E.coli levels. There are some differences in the log of CFU/g we can get from the data set right away as it relates to flour. Buck flour has a mean log CFU/g of roughly 5.49, a median of 5.59, and a standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics for wheat flour are roughly 4.61, 4.67, and 1.27 respectively. These differences will become more apparent in some of the graphs below.</p>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 4
-  Flour Mean_Ecoli_Load Median_Ecoli_Load SD_Ecoli_Load
-  &lt;chr&gt;           &lt;dbl&gt;             &lt;dbl&gt;         &lt;dbl&gt;
-1 Buck             5.49              5.59         0.855
-2 Cake             5.54              5.91         1.73 
-3 Wheat            4.61              4.66         1.27 </code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -140,13 +133,11 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>In the box plot above, we can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.</p>
+<p>To get an idea of this graphically, let’s consider the box plot above. We can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.</p>
 <p>From both the plot above and the metrics discussed earlier we can say cake flour tends to have the highest E. coli load, followed by buck flour, then wheat flour. This indicates that the type of flour may play a role in the persistence of E. coli.</p>
-<p>This visualization supports the results from your Tukey HSD test, showing that Wheat Flour significantly differs from both Cake and Buck in terms of E. coli load</p>
-</section>
-<section id="anova-table-for-flour" class="level4">
-<h4 class="anchored" data-anchor-id="anova-table-for-flour">ANOVA Table for Flour</h4>
-<p>To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table.</p>
+<p>To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table. The ANOVA table below is based on a simple linear model, which follows the form $$</p>
+<p>log((CFU/g)_{i})=_0 + _1 <em>i +</em> </p>
+<p>$$ where <span class="math inline">\(\beta_0\)</span> represents the y-intercept, <span class="math inline">\(\beta_1\)</span> represents the coefficient to the type of flour, for the three flower types which are denoted by <span class="math inline">\(i\)</span>. _{i} represents the error. The results of this model can be seen below.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>             Df Sum Sq Mean Sq F value   Pr(&gt;F)    
@@ -174,13 +165,13 @@ Wheat-Cake -0.92600000 -1.3952815 -0.4567185 0.0000155</code></pre>
 </div>
 <p>Tukey’s HSD test indicates significant differences in our E. coli measurement between wheat and both buck and cake flour types. There is no significant difference between cake and buck flour types.</p>
 </section>
+<section id="other-variables" class="level4">
+<h4 class="anchored" data-anchor-id="other-variables">Other variables</h4>
+<p>While we have created a simple model, including more information may be an improvement. As discussed previously, the data comes with three other variable. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.</p>
 </section>
-<section id="other-variables" class="level3">
-<h3 class="anchored" data-anchor-id="other-variables">Other variables</h3>
-<p>As discussed previously, the data comes with other variables as well. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.</p>
-<section id="water-activity-interaction-plot" class="level4">
-<h4 class="anchored" data-anchor-id="water-activity-interaction-plot">Water Activity Interaction Plot</h4>
-<p>First let’s consider an interaction plot, which shows how the E.coli levels for the types of flour changes with different water activity.</p>
+<section id="water-activity" class="level4">
+<h4 class="anchored" data-anchor-id="water-activity">Water Activity</h4>
+<p>First let’s consider the effect water activity has on both the E.coli levels and the types of flour. This can be done through an interaction plot.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -190,11 +181,11 @@ Wheat-Cake -0.92600000 -1.3952815 -0.4567185 0.0000155</code></pre>
 </div>
 </div>
 </div>
-<p>The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph.</p>
+<p>The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph. To answer the question of whether this is significant or not, a new model could be fit with water activity added, but first let’s consider another variable.</p>
 </section>
-<section id="plot-over-time" class="level4">
-<h4 class="anchored" data-anchor-id="plot-over-time">Plot over time</h4>
-<p>Below is a plot of our E.coli measurements over time. There is a trend with the E.coli levels going down over time. [This will need to be explored further.]</p>
+<section id="day-of-measurement" class="level4">
+<h4 class="anchored" data-anchor-id="day-of-measurement">Day of Measurement</h4>
+<p>Knowing how E.coli levels change over time also seems like important information to consider. Below is a plot of our E.coli measurements over time, which comes from the variable <em>Day</em>. There is a trend with the E.coli levels going down as the day of the measurement increases.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -209,7 +200,7 @@ Wheat-Cake -0.92600000 -1.3952815 -0.4567185 0.0000155</code></pre>
 <section id="anova-tables" class="level3">
 <h3 class="anchored" data-anchor-id="anova-tables">ANOVA Tables</h3>
 <p>Using the variables that were just graphically investigated, let’s create a linear model to see the statistical effect <em>Flour</em>, <em>Day</em>, and <em>aw</em> have on the E.coli measurement, which is still in log form.</p>
-<p>In the ANOVA below <em>Flour</em>, <em>Day</em>, and <em>aw</em> are considered independent variables, while the E.coli measurement is the dependent variable.</p>
+<p>In the ANOVA below <em>Flour</em>, <em>Day</em>, and <em>aw</em> are considered independent variables, while the E.coli measurement is the dependent variable, as before.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>             Df Sum Sq Mean Sq F value Pr(&gt;F)    
@@ -221,8 +212,8 @@ Residuals   265  121.1     0.5
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<p>Above we can see the type of flour is still highly significant, as is the variable <em>Day</em>, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study so it will remain in the model for now.</p>
-<p>One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both <em>Flour</em> and <em>Day</em> are still highly significant, but we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both <em>aw</em> and its interaction with <em>Flour</em> in the model. The interaction between water activity and the day along with the interaction of all three can be removed.</p>
+<p>Above we can see the type of flour is still highly significant, as is the variable <em>Day</em>, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study, so it will remain in the model for now.</p>
+<p>One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both <em>Flour</em> and <em>Day</em> are still highly significant, and we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both <em>aw</em> and its interaction with <em>Flour</em> in the model, but may consider removing others.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>              Df Sum Sq Mean Sq  F value  Pr(&gt;F)    
@@ -238,6 +229,7 @@ Residuals    258   75.5     0.3
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
+<p>The ANOVA results of removing the interaction between water activity and the day along with the interaction of all three are shown below.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>             Df Sum Sq Mean Sq  F value  Pr(&gt;F)    
@@ -254,46 +246,53 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </section>
 <section id="accounting-for-replications" class="level3">
 <h3 class="anchored" data-anchor-id="accounting-for-replications">Accounting for Replications</h3>
-<p>Another variable included in the data set is <em>REP</em> which measures the repetitions. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a mixed model. The resulting ANOVA table is below.</p>
+<p>With three models to consider now, the last variable in the data set, <em>REP</em>, should be considered. <em>REP</em> measures the replications. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of the mixed model above. The resulting ANOVA table from adding the random effect to our third model is below.</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: package 'Matrix' was built under R version 4.3.3</code></pre>
 </div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lmerTest' was built under R version 4.3.3</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Analysis of Variance Table
-          npar Sum Sq Mean Sq   F value
-Flour        2  48.99   24.49   86.3207
-Day          1 355.05  355.05 1251.2775
-aw           1   0.23    0.23    0.8272
-Flour:Day    2  40.90   20.45   72.0735
-Flour:aw     2   3.07    1.53    5.4049</code></pre>
+<pre><code>Type III Analysis of Variance Table with Satterthwaite's method
+          Sum Sq Mean Sq NumDF DenDF   F value    Pr(&gt;F)    
+Flour       9.58    4.79     2   259   16.8854 1.279e-07 ***
+Day       355.05  355.05     1   259 1251.2774 &lt; 2.2e-16 ***
+aw          0.23    0.23     1   259    0.8272  0.363922    
+Flour:Day  40.90   20.45     2   259   72.0735 &lt; 2.2e-16 ***
+Flour:aw    3.07    1.53     2   259    5.4049  0.005016 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<p><strong>Interpretation:</strong></p>
-<p>Main Effect: Flour: E. coli load varies significantly among different flour types (p &lt; 0.001). Day: E. coli load changes significantly over time (p &lt; 0.001). aw: Water activity does not significantly affect E. coli load (p = 0.364).</p>
-<p>Interaction Effect: Flour : The interaction between flour type and day is highly significant (p &lt; 0.001). Flour : The interaction between flour type and water activity is also significant (p = 0.005). Overall, flour type and day have strong effects on E. coli load, with significant interactions involving both factors and water activity.</p>
-<p>Overall, the significant interactions suggest that the relationships between E. coli load and the factors of flour type, day, and water activity are complex and not simply additive. The model indicates that both flour type and day have substantial effects on E. coli load, and their interaction with each other and with water activity should be considered in this analysis</p>
+<p>In this model, which excludes two of the possible interaction terms but has a random , there is a similar level of significance as above.</p>
+<p>In the ANOVA below, which includes terms for all possible interactions as well as, there are fewer values that appear significant. The day is considered highly significant when looking at the corresponding p-value, while the type of flour is now only moderately signifcant.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Type III Analysis of Variance Table with Satterthwaite's method
+             Sum Sq Mean Sq NumDF DenDF F value   Pr(&gt;F)    
+Flour        2.0690  1.0345     2   256  3.6859 0.026414 *  
+Day          4.2551  4.2551     1   256 15.1611 0.000126 ***
+aw           0.0311  0.0311     1   256  0.1108 0.739455    
+Flour:Day    0.4015  0.2007     2   256  0.7153 0.490037    
+Flour:aw     0.3997  0.1999     2   256  0.7122 0.491553    
+Day:aw       0.5068  0.5068     1   256  1.8057 0.180220    
+Flour:Day:aw 1.1352  0.5676     2   256  2.0224 0.134452    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>When comparing the two mixed models that were used in the ANOVA tables, it would seem excluding two of the interaction terms increases the significance of the other variables in the model. Looking at an ANOVA is not all that must be done to queck the model though.</p>
 </section>
 <section id="checking-assumptions-of-the-potential-model" class="level3">
 <h3 class="anchored" data-anchor-id="checking-assumptions-of-the-potential-model">Checking Assumptions of the Potential Model</h3>
-<p>Before declaring a model, we should check whether the model corresponding to the ANOVA table above violates any assumptions around mixed models.</p>
-<p>The first plot is a QQ plot. A QQ plot is designed to check the assumption that the residuals are normally distributed. It does this by comparing the residuals from the model with the theoretical residuals that would be expected from a normal distribution. If the two form a mostly straight line on a 45 degree angle, then the assumption likley holds.</p>
-<p>The QQ plot below does seem to form that 45 degree line. While the ends are not on the line this is not something to be overly worried about given the general trend below.</p>
+<p>Before declaring a model, we should check whether a potential model corresponding to an ANOVA table above violates any assumptions around mixed models.</p>
+<p>Let’s consider the mixed model that excluded two of the interaction terms first. The four plots below check some of the assumptions that must hold for this model to be used.</p>
+<p>The QQ plot and histogram are similar to what was used above, excpet this time residuals are being plotted instead of E.coli levels. One of our assumptions is that the residuals are normally distributed, and by looking at the two plots, this assumption seems to hold.</p>
+<p>Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be done through the residuals vs.&nbsp;fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.</p>
+<p>The plot in the bottom right corner measures how the values generated by the model compare to the actual values observed in the data set. Most points falling on a 45 degree line is a good sign, as it seems the model’s predictions hold up based on our sample.</p>
 <div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Summary_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Another way to check this assumption is by using a histogram of the residuals. Ideally, the residuals form a bell shape, which indicates they approximately follow a normal distribution.</p>
-<p>The histogram below seems to be somewhat symmetrical around zero with a rough bell shape. This, along with the QQ plot above means the normality assumption likely hols.</p>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggplot2' was built under R version 4.3.3</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -302,262 +301,78 @@ Flour:aw     2   3.07    1.53    5.4049</code></pre>
 </div>
 </div>
 </div>
-<p>Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be donw through the residuals vs.&nbsp;fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Summary_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>###Checking all assumptions This graphs are showing that the model should be well fitted by holding all assumptions.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Summary_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
+<p>Since all of the assumptions discussed above hold, the mixed model including only some interactions can be used.</p>
 </section>
 <section id="linear-mixed-model" class="level3">
 <h3 class="anchored" data-anchor-id="linear-mixed-model">Linear Mixed Model</h3>
 <p>After checking the assumptions we can confirm our model is</p>
 <p><span class="math display">\[
-log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
+\begin{align*}
+\log\left(\frac{CFU}{g}\right)_{ijk} &amp;= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&amp;\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
+&amp;\quad + \beta_5 \cdot (\text{aw}_k \times \text{Flour}_i) + u_j + \epsilon_{ijk}
+\end{align*}
 \]</span></p>
 <p>where <span class="math inline">\(\beta_b\)</span> for <span class="math inline">\(b=1,2,3,4,5\)</span> represent the fixed effect coefficients, <span class="math inline">\(u_{j}\)</span> represents the random effect associated with <em>REP</em>, and <span class="math inline">\(\epsilon_{ijk}\)</span> is the error term.</p>
-</section>
-<section id="generalized-linear-mixed-model" class="level3">
-<h3 class="anchored" data-anchor-id="generalized-linear-mixed-model">Generalized Linear Mixed Model</h3>
+<p>Now it is time to look at the full summary of our model.</p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'lmerTest' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'glmmTMB' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in glmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + (1 | REP), family =
-gaussian(link = "identity"), : calling glmer() with family=gaussian (identity
-link) as a shortcut to lmer() is deprecated; please call lmer() directly</code></pre>
-</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed model fit by REML ['lmerMod']
-Formula: Ecoli_Load ~ Flour + Day + aw + aw * Day + (1 | REP)
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Ecoli_Load ~ Flour * Day + aw * Flour + (1 | REP)
    Data: Data_1
 
-REML criterion at convergence: 573.6
+REML criterion at convergence: 462.5
 
 Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--3.3118 -0.6073 -0.0457  0.4971  3.0729 
+     Min       1Q   Median       3Q      Max 
+-2.45985 -0.67130 -0.04201  0.49552  2.89721 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- REP      (Intercept) 0.01508  0.1228  
- Residual             0.44638  0.6681  
+ REP      (Intercept) 0.01689  0.1300  
+ Residual             0.28375  0.5327  
 Number of obs: 270, groups:  REP, 3
 
 Fixed effects:
-             Estimate Std. Error t value
-(Intercept)  6.575441   0.409329  16.064
-FlourCake    0.046667   0.099597   0.469
-FlourWheat  -0.879333   0.099597  -8.829
-Day         -0.024170   0.007829  -3.087
-aw           0.189450   0.717626   0.264
-Day:aw      -0.015002   0.014079  -1.065
-
-Correlation of Fixed Effects:
-           (Intr) FlorCk FlrWht Day    aw    
-FlourCake  -0.122                            
-FlourWheat -0.122  0.500                     
-Day        -0.702  0.000  0.000              
-aw         -0.964  0.000  0.000  0.712       
-Day:aw      0.694  0.000  0.000 -0.989 -0.720</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Analysis of Variance Table
-       npar Sum Sq Mean Sq  F value
-Flour     2  48.99   24.49  54.8705
-Day       1 355.05  355.05 795.3856
-aw        1   0.23    0.23   0.5258
-Day:aw    1   0.51    0.51   1.1353</code></pre>
-</div>
-</div>
-<p>As this Model is giving us warning about using Gaussian Link, we are trying to fit the GLMM with gamma distribution.</p>
-<p>#GLMM with Gamma Distribution</p>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :
-Model failed to converge with max|grad| = 0.0100773 (tol = 0.002, component 1)</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, : Model is nearly unidentifiable: very large eigenvalue
- - Rescale variables?;Model is nearly unidentifiable: large eigenvalue ratio
- - Rescale variables?</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
-  Approximation) [glmerMod]
- Family: Gamma  ( log )
-Formula: Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * aw * Day +  
-    (1 | REP)
-   Data: Data_1
-
-     AIC      BIC   logLik deviance df.resid 
-   576.4    626.8   -274.2    548.4      256 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--4.3102 -0.5338 -0.0775  0.4667  4.2702 
-
-Random effects:
- Groups   Name        Variance  Std.Dev.
- REP      (Intercept) 0.0001468 0.01211 
- Residual             0.0170995 0.13077 
-Number of obs: 270, groups:  REP, 3
-
-Fixed effects:
-                   Estimate Std. Error t value Pr(&gt;|z|)    
-(Intercept)        1.730082   0.124979  13.843  &lt; 2e-16 ***
-FlourCake          0.229794   0.181989   1.263 0.206703    
-FlourWheat         0.050922   0.180112   0.283 0.777388    
-Day               -0.003454   0.002171  -1.591 0.111580    
-aw                 0.185528   0.224047   0.828 0.407627    
-Day:aw            -0.000588   0.003913  -0.150 0.880545    
-FlourCake:aw      -0.018027   0.327827  -0.055 0.956147    
-FlourWheat:aw     -0.230740   0.324100  -0.712 0.476501    
-FlourCake:Day      0.003677   0.003305   1.113 0.265909    
-FlourWheat:Day    -0.005086   0.003235  -1.572 0.115912    
-FlourCake:Day:aw  -0.019828   0.005962  -3.326 0.000882 ***
-FlourWheat:Day:aw  0.003285   0.005822   0.564 0.572621    
+                 Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)      5.718458   0.393995 224.126721  14.514  &lt; 2e-16 ***
+FlourCake        2.717035   0.546997 259.000000   4.967 1.23e-06 ***
+FlourWheat      -0.070328   0.546997 259.000000  -0.129  0.89780    
+Day             -0.019919   0.001588 259.000000 -12.547  &lt; 2e-16 ***
+aw               0.913333   0.687685 259.000000   1.328  0.18531    
+FlourCake:Day   -0.026779   0.002245 259.000000 -11.928  &lt; 2e-16 ***
+FlourWheat:Day  -0.010729   0.002245 259.000000  -4.779 2.96e-06 ***
+FlourCake:aw    -3.068333   0.972534 259.000000  -3.155  0.00179 ** 
+FlourWheat:aw   -0.755000   0.972534 259.000000  -0.776  0.43827    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
-            (Intr) FlorCk FlrWht Day    aw     Day:aw FlrCk: FlrWh: FlrC:D
-FlourCake   -0.657                                                        
-FlourWheat  -0.669  0.446                                                 
-Day         -0.640  0.403  0.415                                          
-aw          -0.983  0.651  0.663  0.634                                   
-Day:aw       0.630 -0.396 -0.408 -0.984 -0.644                            
-FlourCake:w  0.648 -0.987 -0.440 -0.397 -0.660  0.404                     
-FlourWhet:w  0.661 -0.440 -0.988 -0.409 -0.673  0.417  0.446              
-FlourCak:Dy  0.385 -0.674 -0.252 -0.602 -0.381  0.592  0.665  0.248       
-FlourWht:Dy  0.401 -0.255 -0.664 -0.627 -0.397  0.616  0.251  0.655  0.381
-FlorCk:Dy:w -0.379  0.664  0.248  0.591  0.388 -0.602 -0.675 -0.253 -0.985
-FlrWht:Dy:w -0.395  0.251  0.654  0.617  0.405 -0.629 -0.256 -0.664 -0.375
-            FlrW:D FlC:D:
-FlourCake                
-FlourWheat               
-Day                      
-aw                       
-Day:aw                   
-FlourCake:w              
-FlourWhet:w              
-FlourCak:Dy              
-FlourWht:Dy              
-FlorCk:Dy:w -0.374       
-FlrWht:Dy:w -0.986  0.382
-optimizer (Nelder_Mead) convergence code: 0 (OK)
-Model failed to converge with max|grad| = 0.0100773 (tol = 0.002, component 1)
-Model is nearly unidentifiable: very large eigenvalue
- - Rescale variables?
-Model is nearly unidentifiable: large eigenvalue ratio
- - Rescale variables?</code></pre>
+            (Intr) FlorCk FlrWht Day    aw     FlrC:D FlrW:D FlrCk:
+FlourCake   -0.694                                                 
+FlourWheat  -0.694  0.500                                          
+Day         -0.148  0.107  0.107                                   
+aw          -0.960  0.691  0.691  0.000                            
+FlourCak:Dy  0.105 -0.151 -0.075 -0.707  0.000                     
+FlourWht:Dy  0.105 -0.075 -0.151 -0.707  0.000  0.500              
+FlourCake:w  0.679 -0.978 -0.489  0.000 -0.707  0.000  0.000       
+FlourWhet:w  0.679 -0.489 -0.978  0.000 -0.707  0.000  0.000  0.500</code></pre>
 </div>
 </div>
-<p>As the Model is nearly unidentifiable: very large eigenvalue, we will rescale the Day and aw variables for better fitting.</p>
-<p>#GLMM with Scaled_variable</p>
-<p>The model reveals significant effects and interactions between flour types, days, and water activity on E. coli load, with some complex interactions especially involving cake flour</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
-  Approximation) [glmerMod]
- Family: Gamma  ( log )
-Formula: 
-Ecoli_Load ~ Flour + Day_scaled + aw_scaled + aw_scaled * Day_scaled +  
-    Flour * aw_scaled * Day_scaled + (1 | REP)
-   Data: Data_1
-
-     AIC      BIC   logLik deviance df.resid 
-   576.4    626.8   -274.2    548.4      256 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--4.3102 -0.5338 -0.0776  0.4666  4.2702 
-
-Random effects:
- Groups   Name        Variance  Std.Dev.
- REP      (Intercept) 0.0001467 0.01211 
- Residual             0.0170995 0.13077 
-Number of obs: 270, groups:  REP, 3
-
-Fixed effects:
-                                 Estimate Std. Error t value Pr(&gt;|z|)    
-(Intercept)                      1.693489   0.018283  92.625  &lt; 2e-16 ***
-FlourCake                       -0.045392   0.019843  -2.288  0.02216 *  
-FlourWheat                      -0.196326   0.019827  -9.902  &lt; 2e-16 ***
-Day_scaled                      -0.133857   0.013853  -9.663  &lt; 2e-16 ***
-aw_scaled                        0.013417   0.014015   0.957  0.33843    
-Day_scaled:aw_scaled            -0.001719   0.013824  -0.124  0.90101    
-FlourCake:aw_scaled             -0.060999   0.019789  -3.083  0.00205 ** 
-FlourWheat:aw_scaled            -0.009029   0.019823  -0.455  0.64878    
-FlourCake:Day_scaled            -0.256124   0.020178 -12.693  &lt; 2e-16 ***
-FlourWheat:Day_scaled           -0.116195   0.019408  -5.987 2.14e-09 ***
-FlourCake:Day_scaled:aw_scaled  -0.057462   0.019995  -2.874  0.00405 ** 
-FlourWheat:Day_scaled:aw_scaled  0.009545   0.019371   0.493  0.62218    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Correlation of Fixed Effects:
-            (Intr) FlorCk FlrWht Dy_scl aw_scl Dy_s:_ FlrC:_ FlrW:_ FlC:D_
-FlourCake   -0.543                                                        
-FlourWheat  -0.542  0.500                                                 
-Day_scaled   0.001 -0.001  0.000                                          
-aw_scaled    0.000  0.000  0.000  0.000                                   
-Dy_scld:w_s  0.000  0.000  0.000  0.001 -0.006                            
-FlrCk:w_scl  0.000  0.000  0.000  0.000 -0.708  0.004                     
-FlrWht:w_sc  0.000  0.000  0.000  0.000 -0.707  0.004  0.501              
-FlrCk:Dy_sc -0.001  0.001  0.000 -0.687  0.000 -0.001  0.000  0.000       
-FlrWht:Dy_s -0.001  0.001  0.000 -0.714  0.000 -0.001  0.000  0.000  0.491
-FlrCk:Dy_:_  0.000  0.000  0.000 -0.001  0.004 -0.691 -0.011 -0.003  0.012
-FlrWht:D_:_  0.000  0.000  0.000 -0.001  0.004 -0.714 -0.003 -0.007  0.001
-            FlW:D_ FC:D_:
-FlourCake                
-FlourWheat               
-Day_scaled               
-aw_scaled                
-Dy_scld:w_s              
-FlrCk:w_scl              
-FlrWht:w_sc              
-FlrCk:Dy_sc              
-FlrWht:Dy_s              
-FlrCk:Dy_:_  0.001       
-FlrWht:D_:_ -0.004  0.493</code></pre>
-</div>
-</div>
+<p>Using the estimates above we can rewrite the model as <span class="math display">\[
+\begin{align*}
+\log\left(\frac{CFU}{g}\right)_{ijk} &amp;= 5.718458 + 2.717035 \cdot \text{Flour}_{cake} - 0.070328 \cdot \text{Flour}_{wheat} \\
+&amp;\quad - 0.019919 \cdot \text{Day} + 0.913333 \cdot \text{aw} \\
+&amp;\quad - 0.026779 \cdot (\text{Flour}_{cake} \times \text{Day}) - 0.010729 \cdot (\text{Flour}_{wheat} \times \text{Day}) \\
+&amp;\quad - 3.068333 \cdot (\text{Flour}_{cake} \times \text{aw}) - 0.755000 \cdot (\text{Flour}_{wheat} \times \text{aw}) \\
+&amp;\quad + u_j + \epsilon_{ijk}
+\end{align*}
+\]</span></p>
+<p>Note buck flour is not shown. The reason for this is since the type of flour is a category variable, whenever the type of is buck, all terms involving cake or wheat flour will equal zero, and the remaining terms indicated buck flour.</p>
 </section>
-<section id="plot-with-glmm" class="level3">
-<h3 class="anchored" data-anchor-id="plot-with-glmm">Plot with GLMM</h3>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-ℹ Please use `linewidth` instead.</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Summary_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
+<section id="need-more-comparison-stuff-here-where-ryan-stopped" class="level1">
+<h1>Need more comparison stuff here – WHERE RYAN STOPPED</h1>
 <section id="model-comparison" class="level3">
 <h3 class="anchored" data-anchor-id="model-comparison">Model Comparison</h3>
 <p>LM model AIC: 500.80 (lower is better) GLMM model AIC: 576.4 The LM model has a lower AIC, indicating a better fit based on this criterion.</p>
@@ -569,6 +384,7 @@ FlrWht:D_:_ -0.004  0.493</code></pre>
 <pre><code>[1] 500.7978 547.5772</code></pre>
 </div>
 </div>
+</section>
 </section>
 
 </main>
