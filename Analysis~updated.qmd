@@ -217,6 +217,10 @@ The log of the E.coli measurements can be best modeled using a linear mixed mode
 
 Since wheat flour shows significantly different E.coli levels compared to both buck and cake flour, clients can use buck or cake flour in formulations where reducing E. coli is a priority.
 
+Also, since Day has a significant effect, the client should implement interventions (e.g., sanitation or packaging changes) within specific time windows to prevent contamination.
+
+In other words, ensure that environmental conditions and handling practices are as consistent as possible across different batches, or replications to reduce variability.
+
 
 ### References
 
