@@ -1,122 +1,227 @@
 ---
-title: "Data Analysis-1"
+title: "Data Analysis-1
+         Maksuda Toma
+         Ryan Lalicker
+         Jo Charbonneau"
 format: html
 editor: visual
 ---
 
-## Introduction
+### Introduction
 
 The data described below deals with three different types of flour that were inoculated with E. coli. The goal was to study the survival persistence of E. coli. Each type of flour was given three different levels of water and the colony-forming-unit (CFU) per gram was measured at ten unequally spaced time points.
 
-## About the data
+### About the data
 
-The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable *Flour*. The variable *aw* measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. *Day* and *REP* record the day and repelication respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled *Ecoli_Load* in the data set.
+The data set provided by the client includes 270 observations. The three types of flour are wheat, buck, and cake, with each accounting for 90 of the observations. These are recorded in the categorical variable *Flour*. The variable *aw* measures the water activity with the three water levels 0.45, 0.55 and 0.65 units. *Day* and *REP* record the day and repetition respectively. The data set also includes the log of CFU/g instead of the untransformed values. This variable is titled *Ecoli_Load* in the data set.
 
-This plot is a pairwise scatterplot matrix (or pairs plot) that shows the relationships between several variables in the dataset. Each panel shows a scatterplot of one variable against another, and the diagonal often contains the variable names.
+#### Distribution of E.coli Measurements
 
-**Variables:** Flour: Categorical variable with different flour types. aw: Water activity levels. Day: Time variable (days). REP: Replicate identifier. Ecoli_Load: Response variable (E. coli load).
+The first information to consider is the apparent distribution of our dependent variable, which in this case will be the log of CFU/g. To use a linear model or linear mixed model, the independent variable should be approximately normally distributed. We can check this assumption with two plots.
 
-```{r}
-
-
-```
-
-## Data Distribution
-
-First we will see the distribution of the data set to have general idea what going on with the variables.
-
-**Boxplot:** The box plot displayed shows E. coli Load (Log CFU/g) across different water activity (aw) levels and day intervals.
-
-*Key Features of the Box Plot:*
-
-X-axis: Water activity levels (aw) are shown as the categories: 0.45, 0.55, and 0.65. These are replicated for different day intervals.
-
-Y-axis: The E. coli Load (in Log CFU/g), which is a measure of bacterial concentration.
-
-Days: Each water activity level is further broken down by the day (labeled on top of the box plots, e.g., 0, 3, 7, 14, 21, etc.).
-
-*Interpretation:*
-
-Water Activity Levels (aw): For each aw value, the E. coli load seems to decrease over time (as Day progresses).Across all aw levels, E. coli load decreases steadily over time.
-
-For example, at day 0, the load starts higher, and by day 84, the load is significantly lower. This suggests a reduction in bacterial concentration over time, which may be due to the experimental conditions. Day-wise Patterns:
-
-At day 0 and day 3, the distribution of E. coli load is higher and more variable across all aw levels.By day 42 and 56, the E. coli load has decreased significantly, with less variability in the data (shown by the smaller box sizes and shorter whiskers).
-
-As days progress, the variability reduces, with the median E. coli load being lower.
-
-*Outliers:*
-
-There are a few outliers for certain day intervals and aw levels (dots outside the whiskers), which may represent higher-than-expected E. coli load measurements under those specific conditions.
-
-*Overall Summary:* E. coli Load decreases over time across all water activity levels. Higher variability in early days, with the load stabilizing at lower values by day 42-56. No significant differences in the overall trends between the different aw levels, although this might require further statistical testing to confirm.
+The first plot is a histogram. If the data follows an approximate normal distribution, the histogram should follow a bell shape. The histogram below, shows signs of a mild left skew, but this does not mean the data is not approximately normal.
 
 ```{r}
 #| echo: false
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
+Data_1 <- read.csv("Data-1.csv")
+hist(Data_1$Ecoli_Load)
+qqnorm(Data_1$Ecoli_Load)
+qqline(Data_1$Ecoli_Load, col = "red")
 
-# Assuming your data is stored in 'Data_1'
-
-# 1. QQ Plot for Ecoli_Load to check normality
-qqplot_gg <- ggplot(Data_1, aes(sample = Ecoli_Load)) +
-  stat_qq() +
-  stat_qq_line() +
-  ggtitle("QQ Plot for Ecoli_Load") +
-  theme_minimal()
-
-print(qqplot_gg)
-
-# 2. Box Plot for Ecoli_Load across different 'aw' values and 'Days'
-boxplot_gg <- ggplot(Data_1, aes(x = as.factor(aw), y = Ecoli_Load)) +
-  geom_boxplot() +
-  facet_wrap(~ Day) +  # Separate box plots for different time points
-  ggtitle("Box Plot of Ecoli_Load across aw levels") +
-  xlab("aw") +
-  ylab("Ecoli_Load (Log CFU/g)") +
-  theme_minimal()
-
-print(boxplot_gg)
 
 ```
 
-**Line Plot:**
+The second plot to consider is the qq plot above. A QQ plot uses theoretical values from a normal distribution as the x-axis, and the observations from the data on the y-axis. If the data is normally distributed, most of the points should fall on a 45 degree line in the positive direction. In our plot we can see that the majority of the points do fall close to this line. There is some values further from the line at both tails, but this is not uncommon.
 
-This plot visualizes the E. coli Load (Log CFU/g) over time (Day), segmented by water activity (aw) levels and replicates (REP).
+Looking at both the histogram and the qq plot, the assumption that the log of the E.coli measurements are approximately normally distributed is not clearly violated. Therefore, a linear model or mixed model will be used later, as opposed to the generalized version of either.
 
-Key Features:
+### Linear Mixed Model
 
-The plot distinguishes between the three water activity levels using different colors: Red: aw = 0.45 Green: aw = 0.55 Blue: aw = 0.65
+Using the variables that were just graphically investigated, let's create a linear model to see the statistical effect of *Flour*, *Day*, and *aw* and their interaction effect have on the E.coli measurement, which is still in log form.
 
-Lines Connecting Points:
+In the ANOVA below *Flour*, *Day*, and *aw* are considered independent variables, while the E.coli measurement is the dependent variable. We have made *Flour*, *Day*, and *aw* as fixed effect and *REP* as random effect. We also included all the interaction effect here.
 
-The points for each replicate are connected by lines, showing the trend of E. coli load for each aw level over time. There are three separate segments for replicates 1, 2, and 3. Interpretation:
 
-E. coli Load Over Time:
+## Fitting the Model
 
-In all replicates (1, 2, 3), the general trend is that E. coli load decreases over time. This is evident from the overall downward trajectory of the points for all aw levels and replicates.
+**Comparison Among Model**
 
-Effect of Water Activity (aw):
+![Model Comparison](Outline.JPG){fig-align="center" width="15cm"}
 
-Across all replicates, the different aw levels (0.45, 0.55, 0.65) show similar decreasing trends, but some subtle differences are noticeable:
+**Interpretation** The table provided lists of different covariance structures applied to the model, along with their associated information criteria such as AIC, AICC, and BIC. Each criterion helps evaluate the goodness of fit of a model while penalizing model complexity.
 
-In some cases, aw = 0.65 (blue) seems to exhibit a slightly lower bacterial load as time progresses, though this is not always consistent. The lines tend to converge, especially at the end of the time period, suggesting that the aw levels may not be having a significant differential effect on bacterial reduction after enough time has passed.
+***VC (Variance Components):*** This is the simplest covariance structure, assuming homogeneity of variance without any correlation. It has the highest values for all criteria, indicating it is the worst-fitting model.
 
-Replicate (REP) Differences:
+**CS (Compound Symmetry):** Assumes constant variance and equal correlation between repeated measures. A noticeable improvement over the VC model, with lower AIC, AICC, and BIC values.
 
-The data is split into three separate replicates (1, 2, 3), and while all three show the same downward trend in E. coli load over time, the pattern of reduction varies slightly between replicates:
+**CSH (Heterogeneous Compound Symmetry):** Allows for varying variances but assumes equal correlations. This model further reduces the values of the criteria compared to CS, indicating better fit, but is still not the best.
 
-In replicate 1, the load decreases more steadily and uniformly.
+**AR(1) (Autoregressive):** Assumes that the correlation between measurements decreases as the time intervals between them increase. It provides an improvement over the CS model but is not as good as more complex models.
 
-In replicates 2 and 3, there are a few fluctuations, with some points rising slightly before dropping again, suggesting variability in E. coli behavior across replicates. Interaction of Day, aw, and REP:
+**ARH(1) (Heterogeneous Autoregressive):** A more flexible version of AR(1), allowing for heterogeneity in variance. This model improves the fit significantly, with lower AIC and BIC values than AR(1).
 
-There are clear interaction effects between time (Day), water activity levels (aw), and replicates. While the overall trend is downward, the magnitude of reduction and the consistency of this trend vary depending on both the replicate and the water activity level.
+**TOEP (Toeplitz):** Assumes decreasing correlation between measurements over time but without the autoregressive structure. Performs worse than ARH(1) and ANTE(1). ANTE(1) (Ante-dependence):
 
-*Summary:* E. coli load decreases over time regardless of the water activity level or replicate. Subtle differences between the aw levels can be observed, but overall, the reduction patterns are quite similar.Replicates exhibit variability in the bacterial reduction, which might be due to experimental conditions, but the overall decreasing trend remains consistent across replicates.
+**Appropriate Model:**
+
+*The ANTE(1) (Ante Dependence Covariance structure)* model provides the best fit with the lowest Log Likelihood, AIC, AICC, and BIC values. It balances goodness of fit with complexity the best among the models compared. ARH(1) is the second-best model, providing a good fit with lower complexity than ANTE(1), but with slightly worse AIC/BIC values. VC performs the worst and should not be chosen. In conclusion, based on the criteria provided, the ANTE(1) covariance structure is the best model for this data, as it has the smallest values for all the model selection criteria.
+
+## Model Fitting
+
+![Output 1](ANTE(1)_Model-images-0.JPG)
+
+**Interpretation:** Here we have fitted the the ANTE(1) model. The small variance for REP suggests that the variability across replicates is relatively low compared to the variability between other factors like Flour and aw. The model successfully converged, indicating that the fitted covariance structure and mixed-effects model are appropriate for the data. The variance components are relatively small, indicating that much of the variation in the Ecoli_Load may be explained by fixed effects (e.g., Flour, aw, and Day) rather than by random effects.
+
+![Anova Table](ANTE(1)_Model-images-1.JPG){fig-align="center"}
+
+**Interpretation**
+
+**Covariance Parameter Estimates:** Var(REPFlouraw) represents the variance estimates for each level of the random effects grouped by REP, Flour, and aw. The values range from 0.08346 to 0.4082, indicating variability in E. coli load across these groups. Rho(REPFlouraw) represents the autoregressive correlation estimates between time points for each level of the random effects. The values (e.g., -0.09172 to 0.7734) indicate how correlated measurements are over time, with positive values showing stronger correlations and negative values weaker ones.
+
+Type 3 Tests of Fixed Effects:
+
+Flour: Highly significant effect on E. coli load (p \< 0.0001), indicating strong differences in load based on the type of flour. aw: Not significant (p = 0.5414), meaning the water activity does not have a strong independent effect. Flour*aw: Marginally non-significant (p = 0.1304), suggesting a weak interaction between flour type and water activity. Day: Strong significant effect (p \< 0.0001), indicating that E. coli load changes significantly over time. Flour*Day: Significant (p \< 0.0001), indicating that the effect of flour type on E. coli load changes over time. aw\*Day: Not significant (p = 0.6864), meaning no significant interaction between water activity and time. FlourawDay: Not significant (p = 0.6865), suggesting no three-way interaction between flour, water activity, and day.
+
+Overall: Flour and Day have strong independent effects on E. coli load, with interactions between *Flour* and *Day* also being significant. This suggests that both the type of flour and the passage of time have a notable impact on E. coli survival. aw, and its interactions do not significantly influence the results, indicating that water activity might not be a key factor in determining survival persistence of E. coli load under the conditions tested.
+
+![Graph](ANTE(1)_Model-images-2.JPG)
+
+**Interpretation**
+
+*Residuals vs. Predicted Plot (Top Left):*
+
+This scatter plot shows residuals (errors) on the vertical axis and predicted values on the horizontal axis. The spread of residuals appears random, with no discernible pattern. This suggests that the model fits well and that the residuals are approximately homoscedastic (constant variance), which is a good sign of model adequacy.
+
+*Histogram of Residuals (Top Right):\
+\
+*The histogram depicts the distribution of residuals, with a curve overlaid to visualize the approximate normal distribution. The residuals are fairly symmetrically distributed around zero, with a slight skew, indicating that the residuals follow a roughly normal distribution, another good indicator for model fit.
+
+*Q-Q Plot (Bottom Left):*
+
+The quantile-quantile (Q-Q) plot compares the distribution of the residuals to a theoretical normal distribution. The points mostly fall along the reference line, meaning the residuals are approximately normally distributed. A few deviations at the tails suggest minor non-normality, but overall, the model's assumptions appear reasonable.
+
+*Overall*: The residual plots and fit statistics suggest that the model is adequate for the data. The residuals are relatively normal and homoscedastic, indicating that the model assumptions (normality of residuals, independence, and constant variance) are met mostly.
+
+After checking the assumptions we can confirm our model is
+
+$$
+log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
+$$
+
+where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
+
+### Linear Mixed Model
+
+After checking the assumptions we can confirm our model as:
+
+$$
+\begin{align*}
+\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
+&\quad + \beta_5 \cdot (\text{Flour}_i\times\text{aw}_k) \\ &\quad + \beta_6 \cdot ( \text{Day}_j\times\text{aw}_k) \\ &\quad  + \beta_7\cdot(\text{Flour}_i \times \text{Day}_j\times\text{aw}_k)+ u_j + \epsilon_{ijk}
+\end{align*}
+$$
+
+where $\log(y_{ijk})$ represents the log of the CFU/g measurements, $\beta_b$ for $b=1,2,3,4,5,6,7$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term for the $i$th flour type on the $j$th day with the $k$th water level.
+
+As a reminder, the model above is based on the log of the E.coli measurements. To use this model as a prediction of the actual E.coli measurements, use
+
+$$
+y_{ijk}=e^{\log(y_{ijk})}
+$$ which is just the exponential of the model above.
+
+## Exploring Significant factors
+
+As we saw from the model that the m *Flour*, *Day* both have significant main effect and interaction effect, now we'll explore how those factors are effecting in the Model.
+
+One key question in this study is what effect the flour type has on the E.coli levels. There are some differences in the log of CFU/g we can get from the data set right away as it relates to flour. Buck flour has a mean log CFU/g of roughly 5.49, a median of 5.59, and a standard deviation of 0.85. Cake flour has a mean of 5.53, a median of 5.91, and a standard deviation of 1.73. The same three metrics for wheat flour are roughly 4.61, 4.67, and 1.27 respectively. These differences will become more apparent in some of the graphs below.
 
 ```{r}
+#| echo: false
+
+
+suppressPackageStartupMessages(library(dplyr))
+#Data_1 %>%
+#  group_by(Flour) %>%
+#  summarise(
+#    Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+#    Median_Ecoli_Load = median(Ecoli_Load, na.rm = TRUE),
+#    SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
+#  )
+boxplot(Ecoli_Load ~ Flour, data = Data_1, main="Log(E. coli Load) by Flour", xlab="Flour", ylab="Log(E. coli Load)")
+
+```
+
+To get an idea of this graphically, let's consider the box plot above. We can see the interquartile range (IQR) of the three types of wheat vary, with cake flour being the most spread out followed by wheat flour. These differences match the standard deviations discussed above. What stands out about in the box plot are a handful of outliers at the lower end of the box plot for the cake flour observations. This suggests that some samples had much lower E. coli loads compared to the bulk of the data. Neither of the other two types show any outliers.
+
+From both the plot above and the metrics discussed earlier we can say cake flour tends to have the highest E. coli load, followed by buck flour, then wheat flour. This indicates that the type of flour may play a role in the persistence of E. coli.
+
+To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table. The ANOVA table below is based on a simple linear model, which follows the form
+
+\$\$
+
+\log(y\_{ijk}))\_{ijk}=\beta\_0 + \beta\_1 \text{Flour}*i +* \epsilon{i}
+
+\$\$
+
+where where $\log(y_{ijk})$ represents the log of the CFU/g measurements, $\beta_0$ represents the y-intercept, $\beta_1$ represents the coefficient to the type of flour, for the three flower types which are denoted by $i$. \epsilon\_{i} represents the error. The results of this model can be seen below.
+
+```{r}
+#| echo: false
+aov_results <- aov(Ecoli_Load ~ Flour, data = Data_1,)
+summary(aov_results)
+
+```
+
+We can see the relationship between the type of flour and the log of CFU/g of E.coli is highly significant. Now we will look at contrasts based on the type of flour. Since we are comparing the effect three different flour types have on the E.coli measurement, we should use Tukey's Honest Significant Difference (HSD) test.
+
+```{r}
+#| echo: false
+TukeyHSD(aov_results)
+
+```
+
+Tukey's HSD test indicates significant differences in our E. coli measurement between wheat and both buck and cake flour types. There is no significant difference between cake and buck flour types.
+
+#### Day of Measurement
+
+Knowing how E.coli levels change over time also seems like important information to consider. Below is a plot of our E.coli measurements over time, which comes from the variable *Day*. There is a trend with the E.coli levels going down as the day of the measurement increases.
+
+```{r}
+#| echo: false
+plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", main = "E.Coli Measurments over Time")
+
+```
+
+#### Water Activity
+
+Next let's consider the effect water activity has on both the E.coli levels and the types of flour. This can be done through an interaction plot.
+
+```{r}
+#| echo: false
+interaction.plot(x.factor = Data_1$aw,
+                 trace.factor = Data_1$Flour,
+                 response = Data_1$Ecoli_Load,
+                 type = "b",
+                 legend = TRUE,
+                 xlab = "Water Activity",
+                 ylab = "Log(E. coli Load)",
+                 trace.label = "Flour Type",
+                 col = c("blue", "red", "green"),
+                 pch = 19)
+
+```
+
+The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph. To answer the question of whether this is significant or not, a new model could be fit with water activity added, but first let's consider another variable.
+
+### Accounting for Replications
+
+The last variable in the data set, *REP*, should be considered as well. *REP* measures the replications, and goes from 1 to 3 on each day that E.coli levels were measured. Below is three line plots that are similar to the time plot above, except it controls for both water activity, as denoted in the key, and the replication number since one line plot corresponds to one correlation number.
+
+```{r}
+#| echo: false
 #  Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
+suppressPackageStartupMessages(library(ggplot2))
 lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
   geom_line() +
   geom_point() +
@@ -129,179 +234,15 @@ lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw)
 print(lineplot_gg)
 ```
 
-```{r}
+In the plots above, the downward trend over time is persistent with all three replications and all three water activity levels. In terms of water activity, there may be some differences in the variability among the levels, as the 0.65 level has larger differences among the observations as the day number increases. In terms of replication, it is difficult to reach any conclusions from the plots. The impact may be more random.
 
-```
+For this reason, this variable should be included as a random effect in any linear model. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of a linear model.
 
-### Checking Assumptions of the Potential Model
+## Recommendation
 
-Before declaring a model, we should check whether the model corresponding to the ANOVA table above violates any assumptions around mixed models.
 
-The first plot is a QQ plot. A QQ plot is designed to check the assumption that the residuals are normally distributed. It does this by comparing the residuals from the model with the theoretical residuals that would be expected from a normal distribution. If the two form a mostly straight line on a 45 degree angle, then the assumption likley holds.
+## References
 
-The QQ plot below does seem to form that 45 degree line. While the ends are not on the line this is not something to be overly worried about given the general trend below.
-
-```{r}
-#| echo: false
-# QQ Plot
-residuals <- residuals(interaction_mixed)
-qqnorm(residuals)
-qqline(residuals, col = "red")
-```
-
-**Histogram:** Another way to check this assumption is by using a histogram of the residuals. Ideally, the residuals form a bell shape, which indicates they approximately follow a normal distribution.
-
-The histogram below seems to be somewhat left skewed.
-
-```{r}
-#| echo: false
-
-histogram_gg_1 <- ggplot(Data_1, aes(x = Ecoli_Load)) +
-  geom_histogram(binwidth = 0.5, color = "black", fill = "skyblue", alpha = 0.7) +
-  ggtitle("Histogram of Ecoli_Load") +
-  xlab("Ecoli_Load (Log CFU/g)") +
-  ylab("Frequency") +
-  theme_minimal()
-print(histogram_gg_1)
-```
-
-But if we check the residuals, this histogram below seems to be somewhat symmetrical around zero with a rough bell shape. This, along with the QQ plot above means the normality assumption likely holds.
-
-```{r}
-#| echo: false
-library(ggplot2)
-ggplot(data = NULL, aes(x = residuals)) +
-  geom_histogram(bins = 30, fill = "lightblue", color = "black") +
-  labs(x = "Residuals", y = "Frequency", title = "Histogram of Residuals") +
-  theme_minimal()
-```
-
-Another assumption we need to check is whether the residuals have constant variance, also known as homoscedasticity. This can be donw through the residuals vs. fitted values plot below. The plot shows little to no trend with the residuals, which is ideal. While there are more data points on the right side of the graph they still appear random, leading to the conclusion that the constant variance assumption holds.
-
-```{r}
-#| echo: false
-fitted_values <- fitted(interaction_mixed)
-
-# Plot residuals vs. fitted values
-ggplot(data = NULL, aes(x = fitted_values, y = residuals)) +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Fitted Values", y = "Residuals", title = "Residuals vs. Fitted Values") +
-  theme_minimal()
-```
-
-###Checking all assumptions
-
-This graphs are showing that the model should be well fitted by holding all assumptions.
-
-```{r}
-#| echo: false
-# Define observed values from the data
-observed_values <- Data_1$Ecoli_Load  # Assuming Data_1 is your data frame and Ecoli_Load is the response variable
-
-# Set up the plotting area to have 2 rows and 2 columns
-par(mfrow=c(2, 2))
-
-# Plot 1: Residuals vs. Fitted Values
-plot(fitted_values, residuals, main="Residuals vs Fitted Values", xlab="Fitted Values", ylab="Residuals")
-abline(h=0, col="red")
-
-# Plot 2: Q-Q Plot of Residuals
-qqnorm(residuals, main="Q-Q Plot of Residuals")
-qqline(residuals, col = "red")
-
-# Plot 3: Histogram of Residuals
-hist(residuals, main="Histogram of Residuals", xlab="Residuals", breaks=20)
-
-# Plot 4: Predicted vs. Observed Values
-plot(observed_values, fitted_values, main="Predicted vs Observed Values", xlab="Observed Values", ylab="Predicted Values")
-abline(a=0, b=1, col="red")
-
-# Reset plotting layout to default (optional)
-par(mfrow=c(1, 1))
-```
-
-### Linear Mixed Model [Need to write it coorectly]
-
-After checking the assumptions we can confirm our model is
-
-$$
-log((CFU/g)_{ijk})=\beta_0 + \beta_1 \text{Flour}_i + \beta_2 \text{Day}_j + \beta_3 \text{aw}_k + \beta_4 (\text{Flour}_i \times \text{Day}_j) + \beta_5 (\text{aw}_k \times \text{Flour}_i) + u_{j} + \epsilon_{ijk}
-$$
-
-where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
-
-### ANOVA Tables
-
-Using the variables that were just graphically investigated, let's create a linear model to see the statistical effect *Flour*, *Day*, and *aw* have on the E.coli measurement, which is still in log form.
-
-In the ANOVA below *Flour*, *Day*, and *aw* are considered independent variables, while the E.coli measurement is the dependent variable. We have made *Flour*, *Day*, and *aw* as fixed effect and *REP* as random effect. We also included all the interaction effect here.
-
-## Fitting the Model
-
-**Comparison Between Model**
-
-![Model Comparison](Outline.JPG)
-
-**Interpretation** The table provided lists different covariance structures applied to a model, along with their associated information criteria such as AIC, AICC, and BIC. Each criterion helps evaluate the goodness of fit of a model while penalizing model complexity.
-
-VC (Variance Components):
-
-This is the simplest covariance structure, assuming homogeneity of variance without any correlation. It has the highest values for all criteria, indicating it is the worst-fitting model. CS (Compound Symmetry):
-
-Assumes constant variance and equal correlation between repeated measures. A noticeable improvement over the VC model, with lower AIC, AICC, and BIC values. CSH (Heterogeneous Compound Symmetry):
-
-Allows for varying variances but assumes equal correlations. This model further reduces the values of the criteria compared to CS, indicating better fit, but is still not the best. AR(1) (Autoregressive):
-
-Assumes that the correlation between measurements decreases as the time intervals between them increase. It provides an improvement over the CS model but is not as good as more complex models. ARH(1) (Heterogeneous Autoregressive):
-
-A more flexible version of AR(1), allowing for heterogeneity in variance. This model improves the fit significantly, with lower AIC and BIC values than AR(1). TOEP (Toeplitz):
-
-Assumes decreasing correlation between measurements over time but without the autoregressive structure. Performs worse than ARH(1) and ANTE(1). ANTE(1) (Ante-dependence):
-
-The most flexible model, allowing correlations to depend on the lag between measurements, and variances can also differ. This model has the lowest AIC, AICC, and BIC, indicating that it provides the best fit to the data.
-
-**Key Takeaways:** The ANTE(1) model provides the best fit with the lowest AIC, AICC, and BIC values. It balances goodness of fit with complexity the best among the models compared. ARH(1) is the second-best model, providing a good fit with lower complexity than ANTE(1), but with slightly worse AIC/BIC values. VC performs the worst and should not be chosen. In conclusion, based on the criteria provided, the ANTE(1) covariance structure is the best model for this data, as it has the smallest values for all the model selection criteria.
-
-![Output 1](ANTE(1)_Model-images-0.JPG)
-
-**Interpretation** Here we have fitted ANTE(1) model
-
-Interpretation: The small variance for REP suggests that the variability across replicates is relatively low compared to the variability between other factors like Flour and aw. The model successfully converged, indicating that the fitted covariance structure and mixed-effects model are appropriate for the data. The variance components are relatively small, indicating that much of the variation in the Ecoli_Load may be explained by fixed effects (e.g., Flour, aw, and Day) rather than by random effects.
-
-![Anova Table](ANTE(1)_Model-images-1.JPG)
-
-**Interpretation**
-
-Covariance Parameter Estimates:
-
-Var(REPFlouraw) represents the variance estimates for each level of the random effects grouped by REP, Flour, and aw. The values range from 0.08346 to 0.4082, indicating variability in E. coli load across these groups. Rho(REPFlouraw) represents the autoregressive correlation estimates between time points for each level of the random effects. The values (e.g., -0.09172 to 0.7734) indicate how correlated measurements are over time, with positive values showing stronger correlations and negative values weaker ones.
-
-Type 3 Tests of Fixed Effects:
-
-Flour: Highly significant effect on E. coli load (p \< 0.0001), indicating strong differences in load based on the type of flour. aw: Not significant (p = 0.5414), meaning the water activity does not have a strong independent effect. Flour*aw: Marginally non-significant (p = 0.1304), suggesting a weak interaction between flour type and water activity. Day: Strong significant effect (p \< 0.0001), indicating that E. coli load changes significantly over time. Flour*Day: Significant (p \< 0.0001), indicating that the effect of flour type on E. coli load changes over time. aw\*Day: Not significant (p = 0.6864), meaning no significant interaction between water activity and time. FlourawDay: Not significant (p = 0.6865), suggesting no three-way interaction between flour, water activity, and day.
-
-Key Interpretation: Flour and Day have strong independent effects on E. coli load, with interactions between Flour and Day also being significant. This suggests that both the type of flour and the passage of time have a notable impact on E. coli survival. aw and its interactions do not significantly influence the results, indicating that water activity might not be a key factor in determining E. coli load under the conditions tested.
-
-![Graph](ANTE(1)_Model-images-2.JPG)
-
-**Interpretation** *Residual Plots Interpretation:*
-
-Residuals vs. Predicted Plot (Top Left):
-
-This scatter plot shows residuals (errors) on the vertical axis and predicted values on the horizontal axis. The spread of residuals appears random, with no discernible pattern. This suggests that the model fits well and that the residuals are approximately homoscedastic (constant variance), which is a good sign of model adequacy. Histogram of Residuals (Top Right):
-
-The histogram depicts the distribution of residuals, with a curve overlaid to visualize the approximate normal distribution. The residuals are fairly symmetrically distributed around zero, with a slight skew, indicating that the residuals follow a roughly normal distribution, another good indicator for model fit. Q-Q Plot (Bottom Left):
-
-The quantile-quantile (Q-Q) plot compares the distribution of the residuals to a theoretical normal distribution. The points mostly fall along the reference line, meaning the residuals are approximately normally distributed. A few deviations at the tails suggest minor non-normality, but overall, the model's assumptions appear reasonable.
-
-Fit Statistics: Objective: 171.44 (the -2 Res Log Likelihood), which is used for model comparison. AIC: 211.44, AICC: 216.73, and BIC: 193.41; smaller values of these criteria indicate a better model fit. These statistics are helpful when comparing models with different structures or covariance types.
-
-Key Takeaways: The residual plots and fit statistics suggest that the model is adequate for the data. The residuals are relatively normal and homoscedastic, indicating that the model assumptions (normality of residuals, independence, and constant variance) are mostly met.
-
-
-### Summary
-
-
-
-
+-   https://cran.r-project.org/web/packages/mmrm/mmrm.pdf
+-   https://stats.stackexchange.com/questions/636649/how-to-perform-mixed-effect-model-for-data-with-repeated-measurements
+-   (https://www.blackwellpublishing.com/specialarticles/jcn_8_304.pdf)
