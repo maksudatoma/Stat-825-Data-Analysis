@@ -1,0 +1,142 @@
+---
+title: "Data Analysis Presentation 1"
+format: revealjs
+editor: visual
+---
+
+## About the data
+
+*Ecoli_Load*: Log of levels of E.coli in CFU/g 
+
+*Flour*: 3 types of flour (buck, cake, and wheat)
+
+*aw*: 3 levels of water activity (0.45, 0.55, and 0.66 units)
+
+*Day*: 10 unequally spaced days
+
+*REP*: Replication number
+
+```{r}
+#| echo: false
+Data_1 <- read.csv("Data-1.csv")
+head(Data_1)
+```
+
+## E.coli distribution
+
+Appears somewhat normally distributed
+
+Can use linear model or linear mixed model
+
+```{r}
+#| echo: false
+Data_1 <- read.csv("Data-1.csv")
+par(mfrow = c(1,2))
+hist(Data_1$Ecoli_Load)
+qqnorm(Data_1$Ecoli_Load)
+qqline(Data_1$Ecoli_Load, col = "red")
+
+
+```
+
+
+## Flour type
+
+Some differences based on flour type
+
+Cake flour has some outliers
+
+```{r}
+#| echo: false
+# Load the dataset first
+
+Data_1 <- read.csv("Data-1.csv")
+
+
+suppressPackageStartupMessages(library(dplyr))
+Data_1 %>%
+ group_by(Flour) %>%
+ summarise(
+   Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+   Median_Ecoli_Load = median(Ecoli_Load, na.rm = TRUE),
+   SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
+ )
+boxplot(Ecoli_Load ~ Flour, data = Data_1, main="Log(E. coli Load) by Flour", xlab="Flour", ylab="Log(E. coli Load)")
+
+```
+
+## Water Activity
+
+Wheat flour E.coli levels look constant with more water
+
+Cake flour E.coli levels decrease
+
+Buck flour E.coli levels decrease
+```{r}
+#| echo: false
+interaction.plot(x.factor = Data_1$aw,
+                 trace.factor = Data_1$Flour,
+                 response = Data_1$Ecoli_Load,
+                 type = "b",
+                 legend = TRUE,
+                 xlab = "Water Activity",
+                 ylab = "Log(E. coli Load)",
+                 trace.label = "Flour Type",
+                 col = c("blue", "red", "green"),
+                 pch = 19)
+
+```
+
+## E.coli Levels over Time
+
+Downward trend in E.coli levels
+
+```{r}
+#| echo: false
+plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", main = "E.Coli Measurments over Time")
+
+```
+
+
+## Accounting for Replications
+
+EXPLANATION NEEDED
+
+```{r}
+#| echo: false
+#  Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
+suppressPackageStartupMessages(library(ggplot2))
+lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ REP) +  # Separate lines for each replicate
+  ggtitle("Ecoli_Load Over Time by aw Levels and REP") +
+  xlab("Day") +
+  ylab("Ecoli_Load (Log CFU/g)") +
+  theme_minimal()
+
+print(lineplot_gg)
+```
+
+
+
+
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
