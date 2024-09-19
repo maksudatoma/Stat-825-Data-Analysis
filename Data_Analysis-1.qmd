@@ -4,11 +4,9 @@ format: html
 editor: visual
 ---
 
-##Data Description:
+##Introduction:
 
-Researchers have inoculated E. coli to 3 different types of flour and subjected them to 3 different types of water activity. They are measuring the Log CFU/g (E. coli_load) at 10 different unequally spaced time points. Overall, they want to know the survival persistence of E. coli.
-
-Note: - 0.35, 0.55 and 0.65 are the levels of water activity.
+The data described below deals with three different types of flour that were inoculatedwith E. coli.  The goal was to study thesurvival persistence of E. coli.  Each type of flour was given three different levels of water and the colony-forming-unit (CFU) per gram was measured at ten unequally spaced time points.  Note, the data set provided by the client includes the log of CFU/g. Additionally the three water levels are - 0.35, 0.55 and 0.65 units respectively.
 
 ##Things that we could do-
 
@@ -19,8 +17,7 @@ Note: - 0.35, 0.55 and 0.65 are the levels of water activity.
 ```{r}
 # Load the dataset first
 
-library(readr)
-Data_1 <- read_csv("Data-1.csv")
+Data_1 <- read.csv("Data-1.csv")
 
 
 library(dplyr)
@@ -33,31 +30,24 @@ Data_1 %>%
 boxplot(Ecoli_Load ~ Flour, data = Data_1, main="E. coli Load by Flour", xlab="Flour", ylab="E. coli Load")
 
 ```
-*Interpretation:*
-The boxplot shows the E. coli Load by Flour Type across three types of flour: Buck, Cake, and Wheat.
 
-**Buck Flour:**
+*Interpretation:* The boxplot shows the E. coli Load by Flour Type across three types of flour: Buck, Cake, and Wheat.
 
-The median E. coli load is around 5.5.
-The interquartile range (IQR) appears to be fairly narrow, indicating that the E. coli load values are relatively concentrated around the median.
-There are no obvious outliers.
+Buck Flour:
+
+The median E. coli load is around 5.5. The interquartile range (IQR) appears to be fairly narrow, indicating that the E. coli load values are relatively concentrated around the median. There are no obvious outliers.
 
 Cake Flour:
 
-The median E. coli load is higher than for Buck flour, around 6.5.
-The IQR is wider compared to Buck flour, indicating more variability in the E. coli load.
-There are several outliers at the lower end of the scale, suggesting that some samples had much lower E. coli loads compared to the bulk of the data.
+The median E. coli load is higher than for Buck flour, around 6.5. The IQR is wider compared to Buck flour, indicating more variability in the E. coli load. There are several outliers at the lower end of the scale, suggesting that some samples had much lower E. coli loads compared to the bulk of the data.
+
 Wheat Flour:
 
-The median E. coli load is lower than both Buck and Cake flours, at approximately 5.
-The IQR is wider than for Buck but narrower than for Cake flour.
-There are no obvious outliers.
+The median E. coli load is lower than both Buck and Cake flours, at approximately 5. The IQR is wider than for Buck but narrower than for Cake flour. There are no obvious outliers.
 
 *Overall Interpretation:*
 
-Cake Flour tends to have the highest E. coli load, followed by Buck Flour and Wheat Flour, which has the lowest.
-There are significant differences between Wheat Flour and the other two types, indicating that the type of flour likely plays a significant role in the persistence of E. coli.
-This visualization supports the results from your Tukey HSD test, showing that Wheat Flour significantly differs from both Cake and Buck in terms of E. coli load
+Cake Flour tends to have the highest E. coli load, followed by Buck Flour and Wheat Flour, which has the lowest. There are significant differences between Wheat Flour and the other two types, indicating that the type of flour likely plays a significant role in the persistence of E. coli. This visualization supports the results from your Tukey HSD test, showing that Wheat Flour significantly differs from both Cake and Buck in terms of E. coli load
 
 #Anova Test
 
@@ -66,19 +56,20 @@ aov_results <- aov(Ecoli_Load ~ Flour, data = Data_1)
 summary(aov_results)
 
 ```
-As, it's significanty, we're running Tukey's HSD
 
+As, it's significant, we're running Tukey's HSD
 
 ```{r}
 TukeyHSD(aov_results)
 
 ```
-*Interpritation:*
+
+*Interpretation:*
 
 The Tukey HSD test indicates significant differences in E. coli load between Wheat and both Buck and Cake flour types. There is no significant difference between Cake and Buck flour types.
 
-
 #Pairwise Comparison Plot
+
 ```{r}
 
 ```
@@ -110,10 +101,7 @@ ggplot(Data_1, aes(x=Flour, y=Ecoli_Load, fill=Flour)) +
 
 *Interpretation:*
 
-Wheat flour consistently has a lower E. coli load compared to both Buck and Cake flours, and this difference is statistically significant (as indicated by the asterisks).
-The similar means between Buck and Cake suggest that these two flour types have comparable E. coli loads, though Cake flour exhibits more variability and outliers.
-This boxplot visually supports the results from the Tukey HSD test, indicating that Wheat flour has a significantly lower E. coli load than both Buck and Cake flours.
-This graph effectively highlights the significant effect of flour type on E. coli load in the dataset.
+Wheat flour consistently has a lower E. coli load compared to both Buck and Cake flours, and this difference is statistically significant (as indicated by the asterisks). The similar means between Buck and Cake suggest that these two flour types have comparable E. coli loads, though Cake flour exhibits more variability and outliers. This boxplot visually supports the results from the Tukey HSD test, indicating that Wheat flour has a significantly lower E. coli load than both Buck and Cake flours. This graph effectively highlights the significant effect of flour type on E. coli load in the dataset.
 
 #Interaction Plot
 
@@ -135,11 +123,9 @@ ggplot(summary_data, aes(x=Flour, y=Mean_Ecoli_Load, fill=Flour)) +
 
 ```
 
-
 ```{r}
 
 ```
-
 
 ```{r}
 # Assuming your data frame is called 'Data_1' and the column you're analyzing is 'Ecoli_Load'
@@ -159,15 +145,11 @@ print(desc_stats)
 
 ```
 
-You can add options to executable code like this
-
 ```{r}
 #| echo: false
 
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed). #Data Distribution
-#Not_Necessary
 ```{r}
 #| echo: false
 # Load necessary libraries
@@ -218,37 +200,28 @@ This QQ plot suggests that the distribution of Ecoli_Load departs from normality
 
 This plot shows the E. coli Load (Log CFU/g) over time across different levels of water activity (aw) and replicates (REP). The plot is separated by three panels representing replicates 1, 2, and 3. The x-axis represents Day, while the y-axis represents E. coli Load (Log CFU/g). Different colors are used to represent different levels of water activity (aw) (0.45, 0.55, and 0.65).
 
-Key Observations:
-General Trend:
+Key Observations: General Trend:
 
-Across all replicates, there is a general decline in E. coli load over time. This indicates that the bacterial load decreases as the number of days increases, which is expected as time progresses during storage or treatment.
-Effect of Water Activity (aw):
+Across all replicates, there is a general decline in E. coli load over time. This indicates that the bacterial load decreases as the number of days increases, which is expected as time progresses during storage or treatment. Effect of Water Activity (aw):
 
-The red points represent aw = 0.45, green points represent aw = 0.55, and blue points represent aw = 0.65.
-Although there is some variability, aw = 0.65 (blue) generally tends to result in a lower E. coli load compared to the lower levels of water activity (0.45 and 0.55). This is especially noticeable toward the end of the time period (Day 90).
-This suggests that higher water activity could be associated with more rapid reduction in E. coli load.
+The red points represent aw = 0.45, green points represent aw = 0.55, and blue points represent aw = 0.65. Although there is some variability, aw = 0.65 (blue) generally tends to result in a lower E. coli load compared to the lower levels of water activity (0.45 and 0.55). This is especially noticeable toward the end of the time period (Day 90). This suggests that higher water activity could be associated with more rapid reduction in E. coli load.
 
 Replicate Effects:
 
-There are three replicates (panels labeled 1, 2, and 3), and there seems to be some variation in patterns between replicates. For example:
-In Replicate 1, the initial E. coli load is higher, and the decline appears more gradual compared to the other two replicates.
-In Replicates 2 and 3, the load starts high but drops sharply around Days 30-60, suggesting a faster reduction in these replicates.
-While the overall pattern is similar across replicates, the exact magnitude of reduction and variability differs, indicating some possible random variation or replicate-specific conditions.
+There are three replicates (panels labeled 1, 2, and 3), and there seems to be some variation in patterns between replicates. For example: In Replicate 1, the initial E. coli load is higher, and the decline appears more gradual compared to the other two replicates. In Replicates 2 and 3, the load starts high but drops sharply around Days 30-60, suggesting a faster reduction in these replicates. While the overall pattern is similar across replicates, the exact magnitude of reduction and variability differs, indicating some possible random variation or replicate-specific conditions.
 
 Interaction Between Time and Water Activity:
 
-There seems to be a significant interaction between time and aw levels. Over time, the aw = 0.65 condition (blue points) tends to drop more steeply, whereas lower aw levels (0.45 and 0.55) maintain a higher E. coli load for longer periods.
-This could suggest that water activity has a substantial effect on the persistence of E. coli and that higher aw values promote faster reductions in bacterial load.
+There seems to be a significant interaction between time and aw levels. Over time, the aw = 0.65 condition (blue points) tends to drop more steeply, whereas lower aw levels (0.45 and 0.55) maintain a higher E. coli load for longer periods. This could suggest that water activity has a substantial effect on the persistence of E. coli and that higher aw values promote faster reductions in bacterial load.
 
-Conclusion:
-The plot visually confirms that E. coli load decreases over time, and this decline is influenced by the water activity level. Specifically, higher aw (0.65) appears to lead to a faster decline in E. coli compared to the lower aw levels. Additionally, while there is some variability between the replicates, the overall trend remains consistent across all replicates.
+Conclusion: The plot visually confirms that E. coli load decreases over time, and this decline is influenced by the water activity level. Specifically, higher aw (0.65) appears to lead to a faster decline in E. coli compared to the lower aw levels. Additionally, while there is some variability between the replicates, the overall trend remains consistent across all replicates.
 
 ```{r}
 
 ```
 
-
 ## Fitting Mixed Model
+
 ```{r}
 library(lme4)
 # Fit a mixed model with REP as a random effect
@@ -273,7 +246,7 @@ summary(model)
 
 Model: Y=
 
-The output from mixed effects model with the interaction term between aw and Day provides the following results:
+The output from mixed effects model with the interaction term between *aw* and *Day* provides the following results:
 
 *Intercept (E. coli load when both aw and Day are zero):* 6.29789 6.29789, highly significant with 𝑝\<0.001 p\<0.001.
 
@@ -289,8 +262,7 @@ The output from mixed effects model with the interaction term between aw and Day
 
 #Conclusions:
 
-Day has a significant negative effect on E. coli load, indicating that as days progress, E. coli load decreases.
-The interaction between aw and Day is not significant, implying that the effect of days on E. coli load does not vary by different levels of water activity.
+Day has a significant negative effect on E. coli load, indicating that as days progress, E. coli load decreases. The interaction between aw and Day is not significant, implying that the effect of days on E. coli load does not vary by different levels of water activity.
 
 ```{r}
 # Extract residuals and fitted values
@@ -308,10 +280,11 @@ qqline(residuals, col = "red")
 shapiro.test(residuals)
 
 ```
+
 The histogram and QQ Plot showing that the model following the Assumption. So we can fit this model
 
-
 #Model Comparison
+
 ```{r}
 # Fit the model without the interaction term
 model_simple <- lmer(Ecoli_Load ~ aw + Day + (1 | REP), data = Data_1)
@@ -320,12 +293,12 @@ model_simple <- lmer(Ecoli_Load ~ aw + Day + (1 | REP), data = Data_1)
 anova(model_simple, model)
 
 ```
+
 #Interpretation:
 
 Chi-Square Test Statistic: The Chi-Square value (0.8142) measures the difference in fit between the two models.
 
-p-value: The p-value (0.3669) is greater than the typical significance level of 0.05.
-Since the p-value is greater than 0.05, you fail to reject the null hypothesis that the simpler model (without the interaction term) is as good as the full model (with the interaction term). This suggests that the interaction term does not significantly improve the fit of the model.
+p-value: The p-value (0.3669) is greater than the typical significance level of 0.05. Since the p-value is greater than 0.05, you fail to reject the null hypothesis that the simpler model (without the interaction term) is as good as the full model (with the interaction term). This suggests that the interaction term does not significantly improve the fit of the model.
 
 So, we can use the model without the interaction effect.
 
@@ -357,8 +330,6 @@ abline(a=0, b=1, col="red")
 par(mfrow=c(1, 1))
 
 ```
-
-
 
 ```{r}
 #| echo: false
