@@ -214,6 +214,11 @@ In the plots above, the downward trend over time is persistent with all three re
 The log of the E.coli measurements can be best modeled using a linear mixed model.  This is possible in part due to the log of the E.coli measurements being roughly normally distributed.  Factors such as the type of flour being tested, and the amount of time after inoculation play a significant roll in the levels of E.coli.  
 
 
+### Recommendation
+
+Since wheat flour shows significantly different E.coli levels compared to both buck and cake flour, clients can use buck or cake flour in formulations where reducing E. coli is a priority.
+
+
 ### References
 
 -   Comprehensive R Archive Network (CRAN). (2024, June 26). Mixed models for repeated measures [R package mmrm version 0.3.12]. The Comprehensive R Archive Network. https://cran.r-project.org/package=mmrm 
