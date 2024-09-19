@@ -59,11 +59,15 @@ To get an idea of this graphically, let's consider the box plot above. We can se
 
 From both the plot above and the metrics discussed earlier we can say cake flour tends to have the highest E. coli load, followed by buck flour, then wheat flour. This indicates that the type of flour may play a role in the persistence of E. coli.
 
-To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table. The ANOVA table below is based on a simple linear model, which follows the form \$\$
+To see whether the suspected relationship between the flour type and the persistence of E. coli is significant, we can view an ANOVA table. The ANOVA table below is based on a simple linear model, which follows the form 
 
-log((CFU/g)\_{i})=\beta\_0 + \beta\_1 \text{Flour}*i +* \epsilon{i}
+$$
 
-\$\$ where $\beta_0$ represents the y-intercept, $\beta_1$ represents the coefficient to the type of flour, for the three flower types which are denoted by $i$. \epsilon\_{i} represents the error. The results of this model can be seen below.
+\log(y_{ijk}))_{ijk}=\beta_0 + \beta_1 \text{Flour}*i +* \epsilon{i}
+
+$$ 
+
+where where $\log(y_{ijk})$ represents the log of the CFU/g measurements, $\beta_0$ represents the y-intercept, $\beta_1$ represents the coefficient to the type of flour, for the three flower types which are denoted by $i$. \epsilon\_{i} represents the error. The results of this model can be seen below.
 
 ```{r}
 #| echo: false
@@ -84,13 +88,12 @@ TukeyHSD(aov_results)
 
 Tukey's HSD test indicates significant differences in our E. coli measurement between wheat and both buck and cake flour types. There is no significant difference between cake and buck flour types.
 
-#### Other variables
+Note the example above involving the model is one possibility, but the other variables should be considered in a more complex model.
 
-While we have created a simple model, including more information may be an improvement. As discussed previously, the data comes with three other variable. Among the other variables, knowing effect the water activity and time have on the E.coli levels is important.
 
 #### Water Activity
 
-First let's consider the effect water activity has on both the E.coli levels and the types of flour. This can be done through an interaction plot.
+Next let's consider the effect water activity has on both the E.coli levels and the types of flour. This can be done through an interaction plot.
 
 ```{r}
 #| echo: false
@@ -109,6 +112,7 @@ interaction.plot(x.factor = Data_1$aw,
 
 The interaction plot above shows that higher water levels seem to increase the E.coli measurement among the buck flour observations while decreasing the measurement among the cake flour observations. The wheat flour observations have little change according to the graph. To answer the question of whether this is significant or not, a new model could be fit with water activity added, but first let's consider another variable.
 
+
 #### Day of Measurement
 
 Knowing how E.coli levels change over time also seems like important information to consider. Below is a plot of our E.coli measurements over time, which comes from the variable *Day*. There is a trend with the E.coli levels going down as the day of the measurement increases.
@@ -119,72 +123,46 @@ plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", 
 
 ```
 
-### ANOVA Tables
 
-Using the variables that were just graphically investigated, let's create a linear model to see the statistical effect *Flour*, *Day*, and *aw* have on the E.coli measurement, which is still in log form.
 
-In the ANOVA below *Flour*, *Day*, and *aw* are considered independent variables, while the E.coli measurement is the dependent variable, as before.
 
-```{r}
-#| echo: false
-aov_results2 <- aov(Ecoli_Load ~ Flour + Day + aw, data = Data_1,)
-summary(aov_results2)
 
-```
 
-Above we can see the type of flour is still highly significant, as is the variable *Day*, which makes sense from what we saw in the time plot. The water activity is not significant though, as the p-value is above 0.5. Despite not being significant, the water activity may be important within the context of the study, so it will remain in the model for now.
 
-One thing missing in the ANOVA above is any interaction terms. Below is an ANOVA designed to account for possible interactions between the variables. Both *Flour* and *Day* are still highly significant, and we can see their interaction is as well. While the water activity on its own is not significant, the interaction between it and the type of flour is at a marginal level. Therefore we should keep both *aw* and its interaction with *Flour* in the model, but may consider removing others.
 
-```{r}
-#| echo: false
-interaction_aov <- aov(Ecoli_Load ~ Flour * Day * aw, data = Data_1)
-summary(interaction_aov)
-
-```
-
-The ANOVA results of removing the interaction between water activity and the day along with the interaction of all three are shown below.
-
-```{r}
-#| echo: false
-interaction_aov2 <- aov(Ecoli_Load ~ Flour * Day + aw * Flour, data = Data_1)
-summary(interaction_aov2)
-
-```
 
 ### Accounting for Replications
 
-With three models to consider now, the last variable in the data set, *REP*, should be considered. *REP* measures the replications. This variable should be included as a random effect. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of the mixed model above. The resulting ANOVA table from adding the random effect to our third model is below.
+The last variable in the data set, *REP*, should be considered as well. *REP* measures the replications, and goes from 1 to 3 on each day that E.coli levels were measured.  Below is three line plots that are similar to the time plot above, except it controls for both water activity, as denoted in the key, and the replication number since one line plot corresponds to one correlation number.
 
 ```{r}
 #| echo: false
-suppressPackageStartupMessages(library(lme4))
-#install.packages("lmerTest")
-suppressPackageStartupMessages(library(lmerTest))
+#  Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
+suppressPackageStartupMessages(library(ggplot2))
+lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ REP) +  # Separate lines for each replicate
+  ggtitle("Ecoli_Load Over Time by aw Levels and REP") +
+  xlab("Day") +
+  ylab("Ecoli_Load (Log CFU/g)") +
+  theme_minimal()
 
-# Mixed-effects model
-interaction_mixed2 <- lmer(Ecoli_Load ~ Flour * Day + aw * Flour + (1 | REP), data = Data_1)
-anova(interaction_mixed2)
-
+print(lineplot_gg)
 ```
 
-In this model, which excludes two of the possible interaction terms but has a random , there is a similar level of significance as above.
+In the plots above, the downward trend over time is persistent with all three replications and all three water activity levels.  In terms of water activity, there may be some differences in the variability among the levels, as the 0.65 level has larger differences among the observations as the day number increases.  In terms of replication, it is difficult to reach any conclusions from the plots.  The impact may be more random.
 
-In the ANOVA below, which includes terms for all possible interactions as well as, there are fewer values that appear significant. The day is considered highly significant when looking at the corresponding p-value, while the type of flour is now only moderately signifcant.
+For this reason, this variable should be included as a random effect in any linear model. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of a linear model. 
 
-```{r}
-#| echo: false
-suppressPackageStartupMessages(library(lme4))
-#install.packages("lmerTest")
-suppressPackageStartupMessages(library(lmerTest))
 
-# Mixed-effects model
-interaction_mixed <- lmer(Ecoli_Load ~ Flour * Day * aw  + (1 | REP), data = Data_1)
-anova(interaction_mixed)
 
-```
 
-When comparing the two mixed models that were used in the ANOVA tables, it would seem excluding two of the interaction terms increases the significance of the other variables in the model. Looking at an ANOVA is not all that must be done to queck the model though.
+
+
+
+
+
 
 ### Checking Assumptions of the Potential Model
 
@@ -236,73 +214,36 @@ After checking the assumptions we can confirm our model is
 
 $$
 \begin{align*}
-\log\left(\frac{CFU}{g}\right)_{ijk} &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
 &\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
-&\quad + \beta_5 \cdot (\text{aw}_k \times \text{Flour}_i) + u_j + \epsilon_{ijk}
+&\quad + \beta_5 \cdot (\text{Flour}_i\times\text{aw}_k) \\ &\quad + \beta_6 \cdot ( \text{Day}_j\times\text{aw}_k) \\ &\quad  + \beta_7\cdot(\text{Flour}_i \times \text{Day}_j\times\text{aw}_k)+ u_j + \epsilon_{ijk}
 \end{align*}
 $$
 
-where $\beta_b$ for $b=1,2,3,4,5$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term.
+where $\log(y_{ijk})$ represents the log of the CFU/g measurements, $\beta_b$ for $b=1,2,3,4,5,6,7$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term for the $i$th flour type on the $j$th day with the $k$th water level.
+
+As a reminder, the model above is based on the log of the E.coli measurements.  To use this model as a prediction of the actual E.coli measurements, use
+$$
+y_{ijk}=e^{\log(y_{ijk})}
+$$
+which is just the exponential of the model above.
+
+
+
+
 
 Now it is time to look at the full summary of our model.
 
-```{r}
-#| echo: false
-coefficients<-
-model_summary <- summary(interaction_mixed2)
-print(model_summary)
 
-```
+######### Estimates
 
 Using the estimates above we can rewrite the model as 
 $$
 \begin{align*}
-\log\left(\frac{CFU}{g}\right)_{ijk} &= 5.718458 + 2.717035 \cdot \text{Flour}_{cake} - 0.070328 \cdot \text{Flour}_{wheat} \\
-&\quad - 0.019919 \cdot \text{Day} + 0.913333 \cdot \text{aw} \\
-&\quad - 0.026779 \cdot (\text{Flour}_{cake} \times \text{Day}) - 0.010729 \cdot (\text{Flour}_{wheat} \times \text{Day}) \\
-&\quad - 3.068333 \cdot (\text{Flour}_{cake} \times \text{aw}) - 0.755000 \cdot (\text{Flour}_{wheat} \times \text{aw}) \\
-&\quad + u_j + \epsilon_{ijk}
+\log\left(\log(y_{ijk}))_{ijk} &= \text ENTER MORE HERE
 \end{align*}
 $$
 
-Note buck flour is not shown.  The reason for this is since the type of flour is a category variable, whenever the type of is buck, all terms involving cake or wheat flour will equal zero, and the remaining terms indicated buck flour.
+Note buck flour is not shown. The reason for this is since the type of flour is a category variable, whenever the type of is buck, all terms involving cake or wheat flour will equal zero, and the remaining terms indicated buck flour.
 
-
-# Need more comparison stuff here -- WHERE RYAN STOPPED
-
-### Model Comparison
-
-LM model AIC: 500.80 (lower is better) GLMM model AIC: 576.4 The LM model has a lower AIC, indicating a better fit based on this criterion.
-
-BIC:
-
-LM model BIC: 547.58 (lower is better) GLMM model BIC: 626.8 The LM model also has a lower BIC, further suggesting it is the better model by this criterion.
-
-***Conclusion:*** AIC and BIC both indicate that the LM model fits the data better than the GLMM. However, model choice should also consider the assumptions about the data distribution:
-
-```{r}
-#| echo: false
-# Load the necessary library
-suppressPackageStartupMessages(library(lme4))
-
-# Fit the LM model
-interaction_mixed <- lmer(Ecoli_Load ~ Flour + Day + aw + aw * Day + Flour * Day * aw + (1 | REP), data = Data_1)
-
-# Extract log-likelihood
-logLik_LM <- logLik(interaction_mixed)
-
-# Number of parameters
-num_params_LM <- length(fixef(interaction_mixed)) + length(VarCorr(interaction_mixed)$REP)
-
-# Number of observations
-n_LM <- nrow(Data_1)
-
-# Calculate AIC and BIC
-AIC_LM <- -2 * logLik_LM + 2 * num_params_LM
-BIC_LM <- -2 * logLik_LM + num_params_LM * log(n_LM)
-
-# Print AIC and BIC for the LM model
-c(AIC_LM , BIC_LM)
-
-
-```
+#### Add in more here.
