@@ -1,0 +1,252 @@
+---
+title: "Data Analysis Presentation - 
+           Toma, Ryan, Jo"
+format: revealjs
+editor: visual
+---
+
+## About the data
+
+*Ecoli_Load*: Log of levels of E.coli in CFU/g
+
+*Flour*: 3 types of flour (buck, cake, and wheat)
+
+*aw*: 3 levels of water activity (0.45, 0.55, and 0.65 units)
+
+*Day*: 10 unequally spaced days
+
+*REP*: Replication number
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(dplyr))
+Data_1 <- read.csv("Data-1.csv")
+head(Data_1) %>%
+  kable(caption = "E. coli Survival Data") # This creates a simple table
+```
+
+## E.coli distribution
+
+Appears somewhat normally distributed
+
+Can use linear model or linear mixed model
+
+```{r}
+#| echo: false
+Data_1 <- read.csv("Data-1.csv")
+par(mfrow = c(1,2))
+hist(Data_1$Ecoli_Load)
+qqnorm(Data_1$Ecoli_Load)
+qqline(Data_1$Ecoli_Load, col = "red")
+
+```
+
+## Fitting a Model
+
+Want to include all variables from the data
+
+Suspect repetitions are random
+
+### Mixed Model
+
+**Fixed Effects**
+
+-   Flour
+
+-   aw
+
+-   Day
+
+**Random Effects**
+
+-   REP
+
+## Fitting a Model (cont.)
+
+Let $i=$ flour type, $j=$ day, and $k=$ water level.
+
+Then
+
+$$
+\begin{align*}
+\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&\quad + \beta_3 \cdot \text{aw}_k + u_j + \epsilon_{ijk}
+\end{align*}
+$$
+
+where $\log(y_{ijk})$ represents the log of the CFU/g measurements, $\beta_b$ for $b=1,2,3,4,5,6,7$ represent the fixed effect coefficients, $u_{j}$ represents the random effect associated with *REP*, and $\epsilon_{ijk}$ is the error term for the $i$th flour type on the $j$th day with the $k$th water level.
+
+## Interaction
+
+Are the variables independent?
+
+Can the type of flour react differently depending on the water level?
+
+Need to control for interaction among variables
+
+## Mixed Model with Interaction
+
+$$
+\begin{align*}
+\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
+&\quad + \beta_5 \cdot (\text{Flour}_i\times\text{aw}_k) \\ &\quad + \beta_6 \cdot ( \text{Day}_j\times\text{aw}_k) \\ &\quad  + \beta_7\cdot(\text{Flour}_i \times \text{Day}_j\times\text{aw}_k)+ u_j + \epsilon_{ijk}
+\end{align*}
+$$
+
+where $\log(y_{ijk})$ represents the log of the CFU/g measurements
+
+## Assumptions
+
+1.  Normality of dependent variable ($\log(y_{ijk})$)
+
+2.  Normality of residuals
+
+3.  Homoscedasticity (constant variance)
+
+4.  Large sample size
+
+## Checking Assumptions
+
+![Graph](Residual_Plot.JPG)
+
+## Covariance Structure
+
+The first-order ANTE(1) (Ante Dependence Covariance structure)\* model provides the best fit with the lowest Log Likelihood, AIC, AICC, and BIC values. It balances goodness of fit with complexity the best among the models compared
+
+![Model Comparison](AIC.JPG){fig-align="center" width="15cm"}
+
+## SAS Output
+
+![Output 1](ANTE(1)_Model-images-0.JPG)
+
+## Interpretation
+
+Here we have fitted the the ANTE(1) model. The small variance for REP suggests that the variability across replicates is relatively low compared to the variability between other factors like Flour and aw. The model successfully converged, indicating that the fitted covariance structure and mixed-effects model are appropriate for the data. The variance components are relatively small, indicating that much of the variation in the Ecoli_Load may be explained by fixed effects (e.g., Flour, aw, and Day) rather than by random effects.
+
+## ANOVA
+
+![Aova Table](Anova_Table.JPG){fig-align="center"}
+
+
+Flour and Day have strong independent effects on E. coli load, with interactions between *Flour* and *Day* also being significant.
+
+
+## Graphical Exploration
+
+Let's step back and see if the model makes sense with the data
+
+## Flour type
+
+Some differences based on flour type
+
+Cake flour has some outliers
+
+```{r}
+#| echo: false
+# Load the dataset first
+
+Data_1 <- read.csv("Data-1.csv")
+
+
+suppressPackageStartupMessages(library(dplyr))
+Data_1 %>%
+ group_by(Flour) %>%
+ summarise(
+   Mean_Ecoli_Load = mean(Ecoli_Load, na.rm = TRUE),
+   Median_Ecoli_Load = median(Ecoli_Load, na.rm = TRUE),
+   SD_Ecoli_Load = sd(Ecoli_Load, na.rm = TRUE)
+ )
+boxplot(Ecoli_Load ~ Flour, data = Data_1, main="Log(E. coli Load) by Flour", xlab="Flour", ylab="Log(E. coli Load)")
+
+```
+
+## Water Activity
+
+Wheat flour E.coli levels look constant with more water
+
+Cake flour E.coli levels decrease
+
+Buck flour E.coli levels decrease
+
+```{r}
+#| echo: false
+interaction.plot(x.factor = Data_1$aw,
+                 trace.factor = Data_1$Flour,
+                 response = Data_1$Ecoli_Load,
+                 type = "b",
+                 legend = TRUE,
+                 xlab = "Water Activity",
+                 ylab = "Log(E. coli Load)",
+                 trace.label = "Flour Type",
+                 col = c("blue", "red", "green"),
+                 pch = 19)
+
+```
+
+## E.coli Levels over Time
+
+Downward trend in E.coli levels
+
+```{r}
+#| echo: false
+plot(x=Data_1$Day, y=Data_1$Ecoli_Load, xlab = "Day", ylab = "Log(Ecoli_Load)", main = "E.Coli Measurments over Time")
+
+```
+
+## Accounting for Replications
+
+```{r}
+#| echo: false
+#  Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
+suppressPackageStartupMessages(library(ggplot2))
+lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ REP) +  # Separate lines for each replicate
+  ggtitle("Ecoli_Load Over Time by aw Levels and REP") +
+  xlab("Day") +
+  ylab("Ecoli_Load (Log CFU/g)") +
+  theme_minimal()
+
+print(lineplot_gg)
+```
+
+## Interpretation
+
+In this Line plots above, the downward trend over time is persistent with all three replications and all three water activity levels. In terms of water activity, there may be some differences in the variability among the levels, as the 0.65 level has larger differences among the observations as the day number increases. In terms of replication, it is difficult to reach any conclusions from the plots. The impact may be more random.
+
+For this reason, this variable should be included as a random effect in any linear model. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of a linear model.
+
+## Alternative - Linear Model (cont.)
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(broom))
+m1 <- lm(Ecoli_Load ~ Flour * Day * aw, data = Data_1)
+summary(m1)
+
+```
+
+## Alternative - Linear Model
+
+What if we did not account for repeated measures?
+
+$$
+\begin{align*}
+\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
+&\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
+&\quad + \beta_5 \cdot (\text{Flour}_i\times\text{aw}_k) \\ &\quad + \beta_6 \cdot ( \text{Day}_j\times\text{aw}_k) \\ &\quad  + \beta_7\cdot(\text{Flour}_i \times \text{Day}_j\times\text{aw}_k) + \epsilon_{ijk}
+\end{align*}
+$$
+
+
+## References
+
+-   https://onlinelibrary.wiley.com/doi/abs/10.1002/9781118445112.stat05804
+-   https://cran.r-project.org/web/packages/mmrm/mmrm.pdf
+-   https://stats.stackexchange.com/questions/636649/how-to-perform-mixed-effect-model-for-data-with-repeated-measurements
+-   (https://www.blackwellpublishing.com/specialarticles/jcn_8_304.pdf)
+
+## Thank You
