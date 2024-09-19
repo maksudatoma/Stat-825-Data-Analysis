@@ -1,6 +1,9 @@
 ---
-title: "Data Analysis Presentation - 
-           Toma, Ryan, Jo"
+title: "Data Analysis Presentation"
+author:
+  - name: "Maksuda"
+  - name: "Ryan"
+  - name: "Jo"
 format: revealjs
 editor: visual
 ---
@@ -129,15 +132,13 @@ Here we have fitted the the ANTE(1) model. The small variance for REP suggests t
 
 ![Aova Table](Anova_Table.JPG){fig-align="center"}
 
-
 Flour and Day have strong independent effects on E. coli load, with interactions between *Flour* and *Day* also being significant.
-
 
 ## Graphical Exploration
 
 Let's step back and see if the model makes sense with the data
 
-## Flour type
+## Flour Types
 
 Some differences based on flour type
 
@@ -161,6 +162,19 @@ Data_1 %>%
 boxplot(Ecoli_Load ~ Flour, data = Data_1, main="Log(E. coli Load) by Flour", xlab="Flour", ylab="Log(E. coli Load)")
 
 ```
+
+
+## Contrasting Flour Types
+
+Tukey's Honest Significant Difference (HSD) test for contrasts
+
+```{r}
+#| echo: false
+aov_results <- aov(Ecoli_Load ~ Flour, data = Data_1,)
+TukeyHSD(aov_results)
+
+```
+
 
 ## Water Activity
 
@@ -213,40 +227,26 @@ lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw)
 print(lineplot_gg)
 ```
 
+
 ## Interpretation
 
 In this Line plots above, the downward trend over time is persistent with all three replications and all three water activity levels. In terms of water activity, there may be some differences in the variability among the levels, as the 0.65 level has larger differences among the observations as the day number increases. In terms of replication, it is difficult to reach any conclusions from the plots. The impact may be more random.
 
 For this reason, this variable should be included as a random effect in any linear model. Doing so allows us account for additional variability. It also means we are now working with a linear mixed model instead of a linear model.
 
-## Alternative - Linear Model (cont.)
 
-```{r}
-#| echo: false
-suppressPackageStartupMessages(library(broom))
-m1 <- lm(Ecoli_Load ~ Flour * Day * aw, data = Data_1)
-summary(m1)
+## Recommendation
 
-```
-
-## Alternative - Linear Model
-
-What if we did not account for repeated measures?
-
-$$
-\begin{align*}
-\log(y_{ijk}) &= \beta_0 + \beta_1 \cdot \text{Flour}_i + \beta_2 \cdot \text{Day}_j \\
-&\quad + \beta_3 \cdot \text{aw}_k + \beta_4 \cdot (\text{Flour}_i \times \text{Day}_j) \\
-&\quad + \beta_5 \cdot (\text{Flour}_i\times\text{aw}_k) \\ &\quad + \beta_6 \cdot ( \text{Day}_j\times\text{aw}_k) \\ &\quad  + \beta_7\cdot(\text{Flour}_i \times \text{Day}_j\times\text{aw}_k) + \epsilon_{ijk}
-\end{align*}
-$$
+Since wheat flour shows significantly different E.coli levels compared to both buck and cake flour, clients can use buck or cake flour in formulations where reducing E. coli is a priority. 
 
 
 ## References
 
--   https://onlinelibrary.wiley.com/doi/abs/10.1002/9781118445112.stat05804
--   https://cran.r-project.org/web/packages/mmrm/mmrm.pdf
--   https://stats.stackexchange.com/questions/636649/how-to-perform-mixed-effect-model-for-data-with-repeated-measurements
--   (https://www.blackwellpublishing.com/specialarticles/jcn_8_304.pdf)
+-   Comprehensive R Archive Network (CRAN). (2024, June 26). Mixed models for repeated measures [R package mmrm version 0.3.12]. The Comprehensive R Archive Network. https://cran.r-project.org/package=mmrm 
+-   Vik123. (2024, January 19). How to perform mixed-effect model for data with repeated measurements? Cross Validated. https://stats.stackexchange.com/q/636649
+-   Bland J.M. & Altman D.G. (1995) Multiple signi®cance tests: the Bonferroni method.
+British Medical Journal 310, 170.
+-   Introduction to SAS. UCLA: Statistical Consulting Group. 
+from https://stats.oarc.ucla.edu/sas/modules/introduction-to-the-features-of-sas/ (accessed August 22, 2021).
 
 ## Thank You
