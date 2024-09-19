@@ -192,7 +192,7 @@ Below is three line plots that are similar to the time plot above, except it con
 ```{r}
 #| echo: false
 #  Line Graph for Ecoli_Load over time (Days) for each 'aw' and 'REP'
-suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
 lineplot_gg <- ggplot(Data_1, aes(x = Day, y = Ecoli_Load, color = as.factor(aw), group = REP)) +
   geom_line() +
   geom_point() +
