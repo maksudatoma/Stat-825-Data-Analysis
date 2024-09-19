@@ -63,9 +63,8 @@ $$
 
 where the $\times$ symbol represents an interaction between two variables and $u_j$ represents the random effects from replication on the $j$th day.
 
-### Covariance Structure
 
-![Model Comparison](Outline.JPG){fig-align="center" width="15cm"}
+### Covariance Structure
 
 When working with mixed models, a covariance structure must be chosen.  Below is a table that compares the AIC, AICC, and BIC for different covariance structures applied to the mixed model above.  Each of these metrics helps evaluate the goodness of fit of a model while penalizing model complexity.  Generally, the lower the score the better the model.  Note this process was completed in the program SAS.  
 
